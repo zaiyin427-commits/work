@@ -116,11 +116,15 @@ const createSeasonSection = (site, topicData, observations, selectedDate) => {
   return section;
 };
 
+let shownSiteArguments = null;
+
 export const closeInfoPanel = () => {
+  shownSiteArguments = null;
   panel().hidden = true;
 };
 
 export const showSiteInfo = (site, month, topicData, observations, selectedDate) => {
+  shownSiteArguments = { site, month, topicData, observations };
   const body = document.getElementById("info-panel-body");
   document.getElementById("info-panel-title").textContent = site.name;
   document.getElementById("info-panel-topic").textContent =
@@ -133,6 +137,14 @@ export const showSiteInfo = (site, month, topicData, observations, selectedDate)
     : [];
   body.replaceChildren(...seasonSections, ...entries);
   panel().hidden = false;
+};
+
+export const refreshSiteInfo = (selectedDate) => {
+  if (shownSiteArguments === null) {
+    return;
+  }
+  const { site, month, topicData, observations } = shownSiteArguments;
+  showSiteInfo(site, month, topicData, observations, selectedDate);
 };
 
 export const setEmptyMonthMessageVisible = (isVisible) => {

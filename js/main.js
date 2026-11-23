@@ -15,6 +15,7 @@ import {
   initInfoPanel,
   showSiteInfo,
   closeInfoPanel,
+  refreshSiteInfo,
   setEmptyMonthMessageVisible,
 } from "./infoPanel.js";
 
@@ -138,10 +139,11 @@ const start = async () => {
     onChange: (date) => {
       const monthChanged = date.getMonth() !== selectedDate.getMonth();
       selectedDate = date;
-      closeInfoPanel();
       if (monthChanged) {
         render();
         migrationAnimation.play(getEnabledTopics(), getSelectedMonth());
+      } else {
+        refreshSiteInfo(selectedDate);
       }
     },
     onUserInput: playControl.stop,
