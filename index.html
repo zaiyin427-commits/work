@@ -12,9 +12,13 @@
 <body>
   <div id="map"></div>
   <p id="error-message" role="alert" hidden></p>
-  <p id="empty-month-message" hidden>이 달에는 표시할 도래지가 없습니다.</p>
+  <p id="empty-month-message" hidden>이 달에는 표시할 곳이 없습니다.</p>
+  <fieldset id="topic-filter" hidden>
+    <legend>볼거리</legend>
+  </fieldset>
   <aside id="info-panel" hidden>
     <button type="button" id="info-panel-close" aria-label="닫기">&times;</button>
+    <p id="info-panel-topic"></p>
     <h2 id="info-panel-title"></h2>
     <div id="info-panel-body"></div>
   </aside>

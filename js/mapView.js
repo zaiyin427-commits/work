@@ -42,13 +42,22 @@ const createMarker = (site, month, speciesTable, onSiteClick) => {
 export const createSiteLayer = (map) => {
   const layer = L.layerGroup().addTo(map);
 
-  const render = (sites, speciesTable, month, onSiteClick) => {
-    layer.clearLayers();
-    const visibleSites = getVisibleSites(sites, month);
+  const renderTopic = (topicData, month, onSiteClick) => {
+    const visibleSites = getVisibleSites(topicData.sites, month);
     visibleSites.forEach((site) =>
-      createMarker(site, month, speciesTable, onSiteClick).addTo(layer),
+      createMarker(site, month, topicData.species, (clickedSite, clickedMonth) =>
+        onSiteClick(clickedSite, clickedMonth, topicData),
+      ).addTo(layer),
     );
     return visibleSites.length;
+  };
+
+  const render = (topicDataList, month, onSiteClick) => {
+    layer.clearLayers();
+    return topicDataList.reduce(
+      (total, topicData) => total + renderTopic(topicData, month, onSiteClick),
+      0,
+    );
   };
 
   return { render };

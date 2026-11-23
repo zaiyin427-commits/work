@@ -1,7 +1,13 @@
-import { TOPICS, DEFAULT_MONTH, MESSAGES } from "./config.js";
+import {
+  TOPICS,
+  TOPIC_ENABLED_BY_DEFAULT,
+  DEFAULT_MONTH,
+  MESSAGES,
+} from "./config.js";
 import { loadTopicData } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
 import { initMonthSlider } from "./monthSlider.js";
+import { initTopicFilter } from "./topicFilter.js";
 import {
   initInfoPanel,
   showSiteInfo,
@@ -16,48 +22,95 @@ const getErrorText = (error) =>
     ? error.message
     : `${MESSAGES.startFailed} ${error.message}`;
 
-const showError = (error) => {
-  const text = getErrorText(error);
-  console.error(text, error.cause ?? error);
+const displayErrorText = (text) => {
   const element = document.getElementById("error-message");
   element.textContent = text;
   element.hidden = false;
 };
 
-const loadData = async () => {
-  try {
-    return await loadTopicData(TOPICS[0]);
-  } catch (error) {
-    throw new StartupError(`${MESSAGES.loadFailed} ${error.message}`, {
-      cause: error,
-    });
-  }
+const showError = (error) => {
+  const text = getErrorText(error);
+  console.error(text, error.cause ?? error);
+  displayErrorText(text);
 };
+
+const reportLoadFailures = (failures) => {
+  failures.forEach(({ topic, error }) =>
+    console.error(`${MESSAGES.loadFailed} ${topic.dataFile}`, error),
+  );
+  const failedFiles = failures.map(({ topic }) => topic.dataFile).join(", ");
+  displayErrorText(`${MESSAGES.loadFailed} ${failedFiles}`);
+};
+
+const loadTopicWithIdCheck = async (topic) => {
+  const data = await loadTopicData(topic);
+  if (data.topic.id !== topic.id) {
+    throw new Error(
+      `${topic.dataFile}의 topic.id "${data.topic.id}"가 설정의 id "${topic.id}"와 다릅니다.`,
+    );
+  }
+  return data;
+};
+
+const loadAllTopics = async () => {
+  const results = await Promise.allSettled(
+    TOPICS.map((topic) => loadTopicWithIdCheck(topic)),
+  );
+  const loaded = [];
+  const failures = [];
+  results.forEach((result, index) => {
+    if (result.status === "fulfilled") {
+      loaded.push(result.value);
+    } else {
+      failures.push({ topic: TOPICS[index], error: result.reason });
+    }
+  });
+  return { loaded, failures };
+};
+
+const getDefaultEnabledTopicIds = (loadedTopics) =>
+  TOPIC_ENABLED_BY_DEFAULT
+    ? new Set(loadedTopics.map((topicData) => topicData.topic.id))
+    : new Set();
 
 const start = async () => {
   if (typeof L === "undefined") {
     throw new StartupError(MESSAGES.mapLibraryFailed);
   }
-  const data = await loadData();
+  const { loaded, failures } = await loadAllTopics();
+  if (failures.length > 0) {
+    reportLoadFailures(failures);
+  }
+  if (loaded.length === 0) {
+    return;
+  }
   const siteLayer = createSiteLayer(createMap("map"));
+  let enabledTopicIds = getDefaultEnabledTopicIds(loaded);
+  let selectedMonth = DEFAULT_MONTH;
 
-  const handleSiteClick = (site, month) =>
-    showSiteInfo(site, month, data.species);
-
-  const renderMonth = (month) => {
+  const render = () => {
     closeInfoPanel();
+    const enabledTopics = loaded.filter((topicData) =>
+      enabledTopicIds.has(topicData.topic.id),
+    );
     const visibleCount = siteLayer.render(
-      data.sites,
-      data.species,
-      month,
-      handleSiteClick,
+      enabledTopics,
+      selectedMonth,
+      showSiteInfo,
     );
     setEmptyMonthMessageVisible(visibleCount === 0);
   };
 
   initInfoPanel();
-  initMonthSlider(DEFAULT_MONTH, renderMonth);
-  renderMonth(DEFAULT_MONTH);
+  initTopicFilter(loaded, enabledTopicIds, (changedTopicIds) => {
+    enabledTopicIds = changedTopicIds;
+    render();
+  });
+  initMonthSlider(DEFAULT_MONTH, (month) => {
+    selectedMonth = month;
+    render();
+  });
+  render();
 };
 
 start().catch(showError);

@@ -1,0 +1,73 @@
+{
+  "topic": { "id": "autumn-foliage", "title": "단풍 명소" },
+  "species": {
+    "maple": {
+      "name": "단풍나무",
+      "description": "가을에 잎이 붉게 물드는 대표적인 단풍 나무입니다. 계곡과 산자락에서 붉은 빛이 짙게 보입니다.",
+      "tips": "산 위쪽부터 아래로 물들어 내려옵니다. 햇빛이 비스듬한 오전이나 늦은 오후에 색이 가장 선명합니다.",
+      "color": "#7a2410"
+    },
+    "ginkgo": {
+      "name": "은행나무",
+      "description": "가을에 잎이 노랗게 변하는 나무입니다. 가로수길에서 노란 터널을 이룹니다.",
+      "tips": "잎이 떨어진 뒤 바닥에 깔린 노란 길도 볼만합니다. 열매 냄새가 날 수 있으니 바닥을 조심하는 것이 좋습니다.",
+      "color": "#f9a825"
+    }
+  },
+  "sites": [
+    {
+      "id": "seoraksan",
+      "name": "설악산",
+      "lat": 38.1190,
+      "lng": 128.4650,
+      "observations": [
+        { "species": "maple", "months": [10] }
+      ]
+    },
+    {
+      "id": "odaesan",
+      "name": "오대산",
+      "lat": 37.7900,
+      "lng": 128.5430,
+      "observations": [
+        { "species": "maple", "months": [10] }
+      ]
+    },
+    {
+      "id": "bukhansan",
+      "name": "북한산",
+      "lat": 37.6600,
+      "lng": 126.9770,
+      "observations": [
+        { "species": "maple", "months": [10, 11] }
+      ]
+    },
+    {
+      "id": "naejangsan",
+      "name": "내장산",
+      "lat": 35.4850,
+      "lng": 126.8890,
+      "observations": [
+        { "species": "maple", "months": [10, 11] }
+      ]
+    },
+    {
+      "id": "jirisan-piagol",
+      "name": "지리산 피아골",
+      "lat": 35.2380,
+      "lng": 127.5560,
+      "observations": [
+        { "species": "maple", "months": [10, 11] }
+      ]
+    },
+    {
+      "id": "asan-gokgyocheon",
+      "name": "아산 곡교천 은행나무길",
+      "lat": 36.7810,
+      "lng": 126.9980,
+      "observations": [
+        { "species": "ginkgo", "months": [10, 11] }
+      ]
+    }
+  ]
+}

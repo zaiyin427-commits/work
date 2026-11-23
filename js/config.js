@@ -9,7 +9,11 @@ export const MAP_CONFIG = {
 
 export const TOPICS = [
   { id: "migratory-birds", dataFile: "data/migratory-birds.json" },
+  { id: "cherry-blossom", dataFile: "data/cherry-blossom.json" },
+  { id: "autumn-foliage", dataFile: "data/autumn-foliage.json" },
 ];
+
+export const TOPIC_ENABLED_BY_DEFAULT = true;
 
 export const MONTH_MIN = 1;
 export const MONTH_MAX = 12;

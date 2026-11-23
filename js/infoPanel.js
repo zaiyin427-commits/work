@@ -34,11 +34,13 @@ export const closeInfoPanel = () => {
   panel().hidden = true;
 };
 
-export const showSiteInfo = (site, month, speciesTable) => {
+export const showSiteInfo = (site, month, topicData) => {
   const body = document.getElementById("info-panel-body");
   document.getElementById("info-panel-title").textContent = site.name;
+  document.getElementById("info-panel-topic").textContent =
+    topicData.topic.title;
   const entries = getObservationsInMonth(site, month)
-    .map((observation) => speciesTable[observation.species])
+    .map((observation) => topicData.species[observation.species])
     .map(createSpeciesEntry);
   body.replaceChildren(...entries);
   panel().hidden = false;

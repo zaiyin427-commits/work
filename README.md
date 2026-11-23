@@ -1,6 +1,6 @@
-# 철새 도래지 지도
+# 계절 생물 지도
 
-월 슬라이더로 한국의 철새 도래지를 지도에서 보고, 장소를 클릭하면 종 설명과 관찰 팁을 보여주는 정적 웹 페이지.
+철새·벚꽃·단풍 명소를 체크박스로 켜고 끄며 월 슬라이더로 지도에서 보고, 장소를 클릭하면 설명과 관찰 팁을 보여주는 정적 웹 페이지.
 
 ## 실행
 
@@ -21,9 +21,12 @@ js/dataLoader.js            JSON 데이터 로드
 js/mapView.js               Leaflet 지도와 마커
 js/monthSlider.js           월 슬라이더
 js/infoPanel.js             종 설명·관찰 팁 패널
+js/topicFilter.js           소재 켜고 끄기 체크박스
 scripts/updateMonthsFromGbif.mjs  GBIF 기록으로 월 정보 갱신
 scripts/gbif-config.json    갱신 스크립트 설정
 data/migratory-birds.json   철새 도래지 데이터
+data/cherry-blossom.json    벚꽃 명소 데이터
+data/autumn-foliage.json    단풍 명소 데이터
 README.md                   이 문서
 ```
 
@@ -49,7 +52,7 @@ node scripts/updateMonthsFromGbif.mjs          # 드라이런(파일을 쓰지 �
 node scripts/updateMonthsFromGbif.mjs --write  # 데이터 파일에 반영
 ```
 
-기존 장소·종 조합의 `months`만 바꾼다. 설정은 `scripts/gbif-config.json`.
+`data/migratory-birds.json`에만 적용된다. 기존 장소·종 조합의 `months`만 바꾼다. 설정은 `scripts/gbif-config.json`.
 
 | 키 | 의미 |
 |---|---|
@@ -65,9 +68,11 @@ node scripts/updateMonthsFromGbif.mjs --write  # 데이터 파일에 반영
 
 데이터 출처: [GBIF.org](https://www.gbif.org) 출현 기록(검색 API). 주요 데이터셋은 eBird Observation Dataset(CC BY 4.0)과 iNaturalist Research-grade Observations(CC BY-NC 4.0)이며, 비영리 용도로만 쓴다. 기록 수는 시민과학 기록이라 관찰자 활동량의 영향을 받는다.
 
-## 새 주제 추가
+## 새 소재 추가
 
 1. `data/`에 위 형식의 JSON 파일을 추가한다.
 2. `js/config.js`의 `TOPICS` 배열에 `{ id, dataFile }` 항목을 하나 추가한다.
 
-샘플 데이터의 좌표와 월 정보는 대략값이며 검증되지 않았다.
+추가한 소재는 체크박스로 자동으로 나타난다.
+
+샘플 데이터(철새·벚꽃·단풍)의 좌표와 월 정보는 대략값이며 검증되지 않았다.

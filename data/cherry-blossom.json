@@ -1,0 +1,82 @@
+{
+  "topic": { "id": "cherry-blossom", "title": "벚꽃 명소" },
+  "species": {
+    "king-cherry": {
+      "name": "왕벚나무",
+      "description": "잎보다 먼저 연분홍빛 홑꽃이 한꺼번에 피는 벚나무입니다. 가로수길과 하천변에서 꽃터널을 이룹니다.",
+      "tips": "꽃이 막 만개했을 때와 바람에 꽃잎이 날릴 때 모두 볼만합니다. 주말 낮에는 붐비니 이른 아침이 좋습니다.",
+      "color": "#f06292"
+    },
+    "double-cherry": {
+      "name": "겹벚꽃",
+      "description": "꽃잎이 여러 겹이라 풍성하고 색이 진한 벚꽃입니다. 왕벚나무보다 늦게 핍니다.",
+      "tips": "꽃이 무겁게 늘어져 가까이서 보기 좋습니다. 왕벚꽃이 진 뒤에 찾으면 한적하게 즐길 수 있습니다.",
+      "color": "#ad1457"
+    }
+  },
+  "sites": [
+    {
+      "id": "jeju-jeonnongno",
+      "name": "제주 전농로",
+      "lat": 33.5075,
+      "lng": 126.5420,
+      "observations": [
+        { "species": "king-cherry", "months": [3, 4] }
+      ]
+    },
+    {
+      "id": "jinhae-yeojwacheon",
+      "name": "진해 여좌천",
+      "lat": 35.1480,
+      "lng": 128.6640,
+      "observations": [
+        { "species": "king-cherry", "months": [3, 4] }
+      ]
+    },
+    {
+      "id": "hadong-sipri-cherry-road",
+      "name": "하동 십리벚꽃길",
+      "lat": 35.2100,
+      "lng": 127.6300,
+      "observations": [
+        { "species": "king-cherry", "months": [3, 4] }
+      ]
+    },
+    {
+      "id": "gyeongju-bomun",
+      "name": "경주 보문단지",
+      "lat": 35.8400,
+      "lng": 129.2900,
+      "observations": [
+        { "species": "king-cherry", "months": [3, 4] }
+      ]
+    },
+    {
+      "id": "gyeongju-bulguksa",
+      "name": "경주 불국사",
+      "lat": 35.7900,
+      "lng": 129.3320,
+      "observations": [
+        { "species": "double-cherry", "months": [4] }
+      ]
+    },
+    {
+      "id": "seoul-yunjungno",
+      "name": "서울 여의도 윤중로",
+      "lat": 37.5280,
+      "lng": 126.9180,
+      "observations": [
+        { "species": "king-cherry", "months": [4] }
+      ]
+    },
+    {
+      "id": "gangneung-gyeongpo",
+      "name": "강릉 경포대",
+      "lat": 37.7950,
+      "lng": 128.9080,
+      "observations": [
+        { "species": "king-cherry", "months": [4] }
+      ]
+    }
+  ]
+}
