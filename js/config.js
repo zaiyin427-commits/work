@@ -4,7 +4,7 @@ export const MAP_CONFIG = {
   minZoom: 6,
   maxZoom: 14,
   tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  tileAttribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
+  tileAttribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | 관찰 데이터: <a href=\"https://www.gbif.org\">GBIF.org</a>",
 };
 
 export const TOPICS = [

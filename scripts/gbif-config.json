@@ -1,0 +1,20 @@
+{
+  "dataFile": "data/migratory-birds.json",
+  "occurrenceSearchUrl": "https://api.gbif.org/v1/occurrence/search",
+  "radiusKilometers": 15,
+  "yearRange": [2016, 2025],
+  "minimumRecordsPerMonth": 3,
+  "requestIntervalMilliseconds": 300,
+  "maxRetries": 2,
+  "retryWaitMilliseconds": 5000,
+  "userAgent": "seasonal-map-updater/0.1",
+  "taxonKeys": {
+    "hooded-crane": [2474943],
+    "red-crowned-crane": [2474944],
+    "white-naped-crane": [2474942],
+    "bean-goose": [2498027, 7340170],
+    "greater-white-fronted-goose": [2498017],
+    "whooper-swan": [2498347],
+    "baikal-teal": [9235549]
+  }
+}
