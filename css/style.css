@@ -419,3 +419,33 @@ body {
     display: none;
   }
 }
+
+.species-marker {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.species-marker__icon {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  transition: transform 0.12s ease-out;
+}
+
+.species-marker:hover .species-marker__icon,
+.species-marker:focus-visible .species-marker__icon {
+  transform: scale(1.2);
+}
+
+.species-marker:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .species-marker__icon {
+    transition: none;
+  }
+}

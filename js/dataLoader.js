@@ -22,6 +22,9 @@ const validateSpecies = (species, speciesId) => {
   if (typeof species.color !== "string") {
     throw new Error(`종 "${speciesId}"의 color가 문자열이 아닙니다.`);
   }
+  if (species.icon !== undefined && !isNonEmptyString(species.icon)) {
+    throw new Error(`종 "${speciesId}"의 icon이 비어 있지 않은 문자열이 아닙니다.`);
+  }
   if (species.breedingArea !== undefined) {
     validateBreedingArea(species.breedingArea, speciesId);
   }

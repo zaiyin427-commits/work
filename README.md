@@ -19,6 +19,7 @@ js/config.js                설정(TOPICS 등)
 js/main.js                  초기화와 모듈 연결
 js/dataLoader.js            JSON 데이터 로드
 js/mapView.js               Leaflet 지도와 마커
+js/speciesIcons.js          종별 지도 아이콘
 js/dateCalendar.js          날짜 달력(선택 날짜, 이전/다음 달, 오늘)
 js/dateUtils.js             날짜 계산 도우미
 js/migrationAnimation.js    철새 이동 애니메이션
@@ -42,13 +43,15 @@ README.md                   이 문서
 ```json
 {
   "topic": { "id": "...", "title": "..." },
-  "species": { "<speciesId>": { "name": "", "description": "", "tips": "", "color": "#rrggbb", "breedingArea": { "name": "", "lat": 0, "lng": 0 } } },
+  "species": { "<speciesId>": { "name": "", "description": "", "tips": "", "color": "#rrggbb", "icon": "crane", "breedingArea": { "name": "", "lat": 0, "lng": 0 } } },
   "sites": [
     { "id": "", "name": "", "lat": 0, "lng": 0,
       "observations": [ { "species": "<speciesId>", "months": [1, 2, 12] } ] }
   ]
 }
 ```
+
+`icon`은 선택 필드로, 지도 마커 아이콘의 ID이다(`crane`, `goose`, `swan`, `duck`, `cherry-blossom`, `double-cherry-blossom`, `maple-leaf`, `ginkgo-leaf` 중 하나이며 `js/speciesIcons.js`에 정의). 없거나 알 수 없는 값이면 동그라미 마커를 쓴다.
 
 `breedingArea`는 선택 필드로, 이동 애니메이션에 쓰며 이동하는 종에만 필요하다.
 

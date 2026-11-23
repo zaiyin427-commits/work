@@ -39,6 +39,20 @@ export const MARKER_STYLE = {
   fillOpacity: 0.85,
 };
 
+export const MARKER_ICON = {
+  size: 30,
+  anchor: 15,
+  classPrefix: "species-marker",
+  activationKey: "Enter",
+};
+
+export const SPECIES_ICON = {
+  viewBoxSize: 32,
+  outlineColor: "#ffffff",
+  outlineWidth: 2,
+  colorPattern: /^#[0-9a-fA-F]{3,8}$/,
+};
+
 export const FALLBACK_MARKER_COLOR = "#888888";
 
 export const MESSAGES = {

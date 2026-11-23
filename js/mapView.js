@@ -1,4 +1,5 @@
-import { MAP_CONFIG, MARKER_STYLE, FALLBACK_MARKER_COLOR } from "./config.js";
+import { MAP_CONFIG, MARKER_STYLE, MARKER_ICON, FALLBACK_MARKER_COLOR } from "./config.js";
+import { getSpeciesIconSvg } from "./speciesIcons.js";
 
 export const getObservationsInMonth = (site, month) =>
   site.observations.filter((observation) => observation.months.includes(month));
@@ -22,22 +23,67 @@ export const createMap = (containerId) => {
   return map;
 };
 
-const getMarkerColor = (site, month, speciesTable) => {
-  const [firstObservation] = getObservationsInMonth(site, month);
-  return speciesTable[firstObservation.species]?.color ?? FALLBACK_MARKER_COLOR;
+const warnedIconSpeciesIds = new Set();
+
+const warnOnceAboutIcon = (speciesId, iconId) => {
+  if (warnedIconSpeciesIds.has(speciesId)) {
+    return;
+  }
+  warnedIconSpeciesIds.add(speciesId);
+  const problem = iconId === undefined ? "icon 필드가 없습니다" : `알 수 없는 icon "${iconId}"입니다`;
+  console.warn(`종 "${speciesId}": ${problem}. 원형 마커로 대체합니다.`);
 };
 
-const createMarker = (site, month, speciesTable, onSiteClick) => {
-  const color = getMarkerColor(site, month, speciesTable);
-  const marker = L.circleMarker([site.lat, site.lng], {
+const getFirstSpecies = (site, month, speciesTable) => {
+  const [firstObservation] = getObservationsInMonth(site, month);
+  return { id: firstObservation.species, data: speciesTable[firstObservation.species] };
+};
+
+const createCircleMarker = (site, color) =>
+  L.circleMarker([site.lat, site.lng], {
     radius: MARKER_STYLE.radius,
     weight: MARKER_STYLE.weight,
     color: MARKER_STYLE.borderColor,
     fillColor: color,
     fillOpacity: MARKER_STYLE.fillOpacity,
   });
+
+const createIconMarker = (site, species, svgMarkup) => {
+  const wrapper = document.createElement("div");
+  wrapper.className = `${MARKER_ICON.classPrefix}__icon`;
+  wrapper.setAttribute("role", "img");
+  wrapper.setAttribute("aria-label", `${site.name} – ${species.data.name}`);
+  wrapper.innerHTML = svgMarkup;
+  const icon = L.divIcon({
+    className: `${MARKER_ICON.classPrefix} ${MARKER_ICON.classPrefix}--${species.data.icon}`,
+    html: wrapper,
+    iconSize: [MARKER_ICON.size, MARKER_ICON.size],
+    iconAnchor: [MARKER_ICON.anchor, MARKER_ICON.anchor],
+  });
+  return L.marker([site.lat, site.lng], { icon, keyboard: true });
+};
+
+const createSiteMarker = (site, month, speciesTable) => {
+  const species = getFirstSpecies(site, month, speciesTable);
+  const color = species.data?.color ?? FALLBACK_MARKER_COLOR;
+  const svgMarkup = getSpeciesIconSvg(species.data?.icon, color);
+  if (svgMarkup === null) {
+    warnOnceAboutIcon(species.id, species.data?.icon);
+    return createCircleMarker(site, color);
+  }
+  return createIconMarker(site, species, svgMarkup);
+};
+
+const createMarker = (site, month, speciesTable, onSiteClick) => {
+  const marker = createSiteMarker(site, month, speciesTable);
   marker.bindTooltip(document.createTextNode(site.name));
-  marker.on("click", () => onSiteClick(site, month));
+  const activate = () => onSiteClick(site, month);
+  marker.on("click", activate);
+  marker.on("keypress", (event) => {
+    if (event.originalEvent.key === MARKER_ICON.activationKey) {
+      activate();
+    }
+  });
   return marker;
 };
 
