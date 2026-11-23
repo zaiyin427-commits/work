@@ -36,4 +36,27 @@ export const MESSAGES = {
   startFailed: "페이지를 시작하지 못했습니다.",
   tipsLabel: "관찰 팁",
   monthSuffix: "월",
+  playLabel: "▶ 재생",
+  pauseLabel: "⏸ 정지",
+};
+
+export const MIGRATION_ANIMATION = {
+  paneName: "migrationPane",
+  paneZIndex: 350,
+  durationMilliseconds: 2000,
+  dotCount: 5,
+  dotRadius: 6,
+  dotFillOpacity: 1,
+  dotStrokeColor: "#ffffff",
+  dotStrokeWeight: 2,
+  pathOpacity: 0.7,
+  startStaggerRatio: 0.4,
+  curveBend: 0.25,
+  pathPointCount: 40,
+  pathWeight: 3,
+  pathDashArray: "8 8",
+};
+
+export const PLAYBACK = {
+  intervalMilliseconds: 3000,
 };

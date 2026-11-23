@@ -7,6 +7,8 @@ import {
 import { loadTopicData } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
 import { initMonthSlider } from "./monthSlider.js";
+import { initPlayControl } from "./playControl.js";
+import { createMigrationAnimation } from "./migrationAnimation.js";
 import { initTopicFilter } from "./topicFilter.js";
 import {
   initInfoPanel,
@@ -84,15 +86,19 @@ const start = async () => {
   if (loaded.length === 0) {
     return;
   }
-  const siteLayer = createSiteLayer(createMap("map"));
+  const map = createMap("map");
+  const siteLayer = createSiteLayer(map);
+  const migrationAnimation = createMigrationAnimation(map);
   let enabledTopicIds = getDefaultEnabledTopicIds(loaded);
   let selectedMonth = DEFAULT_MONTH;
 
+  const getEnabledTopics = () =>
+    loaded.filter((topicData) => enabledTopicIds.has(topicData.topic.id));
+
   const render = () => {
     closeInfoPanel();
-    const enabledTopics = loaded.filter((topicData) =>
-      enabledTopicIds.has(topicData.topic.id),
-    );
+    migrationAnimation.clear();
+    const enabledTopics = getEnabledTopics();
     const visibleCount = siteLayer.render(
       enabledTopics,
       selectedMonth,
@@ -106,10 +112,19 @@ const start = async () => {
     enabledTopicIds = changedTopicIds;
     render();
   });
-  initMonthSlider(DEFAULT_MONTH, (month) => {
-    selectedMonth = month;
-    render();
-  });
+  const playControl = initPlayControl(
+    () => selectedMonth,
+    (month) => monthSlider.setMonth(month),
+  );
+  const monthSlider = initMonthSlider(
+    DEFAULT_MONTH,
+    (month) => {
+      selectedMonth = month;
+      render();
+      migrationAnimation.play(getEnabledTopics(), month);
+    },
+    playControl.stop,
+  );
   render();
 };
 

@@ -21,6 +21,21 @@ const validateSpecies = (species, speciesId) => {
   if (typeof species.color !== "string") {
     throw new Error(`종 "${speciesId}"의 color가 문자열이 아닙니다.`);
   }
+  if (species.breedingArea !== undefined) {
+    validateBreedingArea(species.breedingArea, speciesId);
+  }
+};
+
+const validateBreedingArea = (breedingArea, speciesId) => {
+  if (!isPlainObject(breedingArea)) {
+    throw new Error(`종 "${speciesId}"의 breedingArea가 객체가 아닙니다.`);
+  }
+  if (!isNonEmptyString(breedingArea.name)) {
+    throw new Error(`종 "${speciesId}"의 breedingArea에 비어 있지 않은 문자열 name이 없습니다.`);
+  }
+  if (!Number.isFinite(breedingArea.lat) || !Number.isFinite(breedingArea.lng)) {
+    throw new Error(`종 "${speciesId}"의 breedingArea lat/lng가 숫자가 아닙니다.`);
+  }
 };
 
 const validateObservation = (observation, siteId, speciesTable) => {

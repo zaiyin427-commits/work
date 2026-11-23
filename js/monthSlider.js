@@ -1,6 +1,6 @@
 import { MESSAGES } from "./config.js";
 
-export const initMonthSlider = (initialMonth, onChange) => {
+export const initMonthSlider = (initialMonth, onChange, onUserInput = () => {}) => {
   const slider = document.getElementById("month-slider");
   const label = document.getElementById("month-label");
 
@@ -9,11 +9,17 @@ export const initMonthSlider = (initialMonth, onChange) => {
     label.textContent = `${month}${MESSAGES.monthSuffix}`;
   };
 
-  slider.addEventListener("input", () => {
-    const month = Number(slider.value);
+  const setMonth = (month) => {
     showMonth(month);
     onChange(month);
+  };
+
+  slider.addEventListener("input", () => {
+    onUserInput();
+    setMonth(Number(slider.value));
   });
 
   showMonth(initialMonth);
+
+  return { setMonth };
 };

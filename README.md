@@ -1,6 +1,6 @@
 # 계절 생물 지도
 
-철새·벚꽃·단풍 명소를 체크박스로 켜고 끄며 월 슬라이더로 지도에서 보고, 장소를 클릭하면 설명과 관찰 팁을 보여주는 정적 웹 페이지.
+철새·벚꽃·단풍 명소를 체크박스로 켜고 끄며 월 슬라이더로 지도에서 보고, 장소를 클릭하면 설명과 관찰 팁을 보여주는 정적 웹 페이지. 월을 바꾸면 철새 이동 애니메이션이 나오고, 재생 버튼으로 월을 자동으로 넘길 수 있다.
 
 ## 실행
 
@@ -20,6 +20,8 @@ js/main.js                  초기화와 모듈 연결
 js/dataLoader.js            JSON 데이터 로드
 js/mapView.js               Leaflet 지도와 마커
 js/monthSlider.js           월 슬라이더
+js/migrationAnimation.js    철새 이동 애니메이션
+js/playControl.js           월 자동 재생 버튼
 js/infoPanel.js             종 설명·관찰 팁 패널
 js/topicFilter.js           소재 켜고 끄기 체크박스
 scripts/updateMonthsFromGbif.mjs  GBIF 기록으로 월 정보 갱신
@@ -35,13 +37,15 @@ README.md                   이 문서
 ```json
 {
   "topic": { "id": "...", "title": "..." },
-  "species": { "<speciesId>": { "name": "", "description": "", "tips": "", "color": "#rrggbb" } },
+  "species": { "<speciesId>": { "name": "", "description": "", "tips": "", "color": "#rrggbb", "breedingArea": { "name": "", "lat": 0, "lng": 0 } } },
   "sites": [
     { "id": "", "name": "", "lat": 0, "lng": 0,
       "observations": [ { "species": "<speciesId>", "months": [1, 2, 12] } ] }
   ]
 }
 ```
+
+`breedingArea`는 선택 필드로, 이동 애니메이션에 쓰며 이동하는 종에만 필요하다.
 
 ## 월 데이터 갱신 (GBIF)
 
@@ -75,4 +79,4 @@ node scripts/updateMonthsFromGbif.mjs --write  # 데이터 파일에 반영
 
 추가한 소재는 체크박스로 자동으로 나타난다.
 
-샘플 데이터(철새·벚꽃·단풍)의 좌표와 월 정보는 대략값이며 검증되지 않았다.
+샘플 데이터(철새·벚꽃·단풍)의 좌표와 월 정보, `breedingArea` 좌표는 대략값이며 검증되지 않았다.
