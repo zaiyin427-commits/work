@@ -51,9 +51,9 @@
       "lat": 34.8845,
       "lng": 127.5093,
       "observations": [
-        { "species": "hooded-crane", "months": [11, 12, 1, 2, 3] },
-        { "species": "white-naped-crane", "months": [12, 1, 2] },
-        { "species": "whooper-swan", "months": [12, 1, 2] }
+        { "species": "hooded-crane", "months": [1, 2, 3, 10, 11, 12] },
+        { "species": "white-naped-crane", "months": [1, 2, 11, 12] },
+        { "species": "whooper-swan", "months": [1, 2, 4, 10, 11, 12] }
       ]
     },
     {
@@ -62,9 +62,9 @@
       "lat": 38.1467,
       "lng": 127.3133,
       "observations": [
-        { "species": "red-crowned-crane", "months": [11, 12, 1, 2] },
+        { "species": "red-crowned-crane", "months": [1, 2, 3, 11, 12] },
         { "species": "white-naped-crane", "months": [10, 11, 12, 1, 2, 3] },
-        { "species": "bean-goose", "months": [11, 12, 1, 2] }
+        { "species": "bean-goose", "months": [1, 2, 3, 4, 10, 11, 12] }
       ]
     },
     {
@@ -73,9 +73,9 @@
       "lat": 35.3081,
       "lng": 128.6989,
       "observations": [
-        { "species": "baikal-teal", "months": [11, 12, 1, 2] },
-        { "species": "whooper-swan", "months": [12, 1, 2] },
-        { "species": "greater-white-fronted-goose", "months": [12, 1, 2] }
+        { "species": "baikal-teal", "months": [1, 2, 3, 10, 11, 12] },
+        { "species": "whooper-swan", "months": [1, 2, 3, 4, 11, 12] },
+        { "species": "greater-white-fronted-goose", "months": [1, 2, 3, 10, 11, 12] }
       ]
     },
     {
@@ -84,9 +84,9 @@
       "lat": 35.1033,
       "lng": 128.9433,
       "observations": [
-        { "species": "whooper-swan", "months": [11, 12, 1, 2, 3] },
-        { "species": "greater-white-fronted-goose", "months": [10, 11, 12, 1, 2, 3] },
-        { "species": "bean-goose", "months": [11, 12, 1, 2] }
+        { "species": "whooper-swan", "months": [1, 2, 3, 4, 10, 11, 12] },
+        { "species": "greater-white-fronted-goose", "months": [1, 2, 10, 11, 12] },
+        { "species": "bean-goose", "months": [1, 2, 3, 4, 11, 12] }
       ]
     },
     {
@@ -95,9 +95,9 @@
       "lat": 36.5333,
       "lng": 126.4167,
       "observations": [
-        { "species": "baikal-teal", "months": [10, 11, 12, 1, 2] },
-        { "species": "bean-goose", "months": [10, 11, 12, 1, 2, 3] },
-        { "species": "white-naped-crane", "months": [11, 12, 1, 2] }
+        { "species": "baikal-teal", "months": [1, 2, 3, 10, 11, 12] },
+        { "species": "bean-goose", "months": [1, 2, 3, 4, 5, 9, 10, 11, 12] },
+        { "species": "white-naped-crane", "months": [3, 11, 12] }
       ]
     },
     {
@@ -106,9 +106,9 @@
       "lat": 36.0083,
       "lng": 126.7500,
       "observations": [
-        { "species": "baikal-teal", "months": [11, 12, 1, 2] },
-        { "species": "greater-white-fronted-goose", "months": [11, 12, 1, 2] },
-        { "species": "whooper-swan", "months": [12, 1] }
+        { "species": "baikal-teal", "months": [1, 2, 3, 10, 11, 12] },
+        { "species": "greater-white-fronted-goose", "months": [1, 2, 3, 10, 11, 12] },
+        { "species": "whooper-swan", "months": [1, 2, 3, 10, 11, 12] }
       ]
     }
   ]
