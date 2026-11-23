@@ -1,6 +1,6 @@
 # 계절 생물 지도
 
-철새·벚꽃·단풍 명소를 체크박스로 켜고 끄며 월 슬라이더로 지도에서 보고, 장소를 클릭하면 설명과 관찰 팁을 보여주는 정적 웹 페이지. 월을 바꾸면 철새 이동 애니메이션이 나오고, 재생 버튼으로 월을 자동으로 넘길 수 있다.
+철새·벚꽃·단풍 명소를 왼쪽 위의 토글 버튼으로 켜고 끄며, 오른쪽 위의 날짜 달력으로 날짜를 골라 지도에서 보고, 장소를 클릭하면 설명과 관찰 팁을 보여주는 정적 웹 페이지. 기본 날짜는 오늘이고, 선택한 날짜의 달이 바뀌면 철새 이동 애니메이션이 나온다. 달력의 ◀/▶는 같은 날짜의 이전·다음 달로 이동하고(말일을 넘으면 말일로 맞춤), "오늘" 버튼은 오늘로 돌아오며, 재생 버튼은 한 달씩 자동으로 넘긴다(12월 다음은 같은 해 1월). 장소 패널의 "N월 M일 기준" 시기 판정도 선택한 날짜를 쓴다. 화면 너비 640px 이하이거나 높이 700px 이하이면 달력이 날짜 버튼 하나로 접혀 있다가 눌러서 펼친다. 장소 패널이 열릴 때, 접힌 모드에서 날짜를 고른 뒤, Esc를 누를 때, 지도를 탭할 때 자동으로 다시 접힌다.
 
 ## 실행
 
@@ -19,11 +19,12 @@ js/config.js                설정(TOPICS 등)
 js/main.js                  초기화와 모듈 연결
 js/dataLoader.js            JSON 데이터 로드
 js/mapView.js               Leaflet 지도와 마커
-js/monthSlider.js           월 슬라이더
+js/dateCalendar.js          날짜 달력(선택 날짜, 이전/다음 달, 오늘)
+js/dateUtils.js             날짜 계산 도우미
 js/migrationAnimation.js    철새 이동 애니메이션
-js/playControl.js           월 자동 재생 버튼
+js/playControl.js           날짜 자동 재생 버튼(달력 안)
 js/infoPanel.js             종 설명·관찰 팁 패널
-js/topicFilter.js           소재 켜고 끄기 체크박스
+js/topicFilter.js           소재 켜고 끄기 토글 버튼
 js/seasonStatus.js          계절 시기 계산(평년값·관측값 기준)
 scripts/updateMonthsFromGbif.mjs  GBIF 기록으로 월 정보 갱신
 scripts/gbif-config.json    갱신 스크립트 설정
@@ -102,9 +103,9 @@ node scripts/updateSeasonObservations.mjs --inspect 108   # 관측소 번호의 
 ## 새 소재 추가
 
 1. `data/`에 위 형식의 JSON 파일을 추가한다.
-2. `js/config.js`의 `TOPICS` 배열에 `{ id, dataFile }` 항목을 하나 추가한다.
+2. `js/config.js`의 `TOPICS` 배열에 `{ id, label, dataFile }` 항목을 하나 추가한다(`label`은 토글 버튼에 쓰는 짧은 이름이며, 없으면 JSON의 `topic.title`을 쓴다).
 
-추가한 소재는 체크박스로 자동으로 나타난다.
+추가한 소재는 토글 버튼으로 자동으로 나타난다.
 
 ## 기상청 평년값 출처
 

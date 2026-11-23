@@ -1,8 +1,14 @@
-import { MESSAGES, MONTH_MIN, MONTH_MAX, PLAYBACK } from "./config.js";
+import { MESSAGES, MONTHS_PER_YEAR, CALENDAR, PLAYBACK } from "./config.js";
+import { createClampedDate } from "./dateUtils.js";
 
-const getNextMonth = (month) => (month === MONTH_MAX ? MONTH_MIN : month + 1);
+const getNextDateWithinYear = (date) =>
+  createClampedDate(
+    date.getFullYear(),
+    (date.getMonth() + CALENDAR.monthsPerStep) % MONTHS_PER_YEAR,
+    date.getDate(),
+  );
 
-export const initPlayControl = (getMonth, setMonth) => {
+export const initPlayControl = (getDate, setDate) => {
   const button = document.getElementById("play-toggle");
   let timerId = null;
 
@@ -21,7 +27,7 @@ export const initPlayControl = (getMonth, setMonth) => {
 
   const start = () => {
     timerId = setInterval(
-      () => setMonth(getNextMonth(getMonth())),
+      () => setDate(getNextDateWithinYear(getDate())),
       PLAYBACK.intervalMilliseconds,
     );
     showState();

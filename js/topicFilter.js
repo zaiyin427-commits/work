@@ -1,37 +1,44 @@
+import { TOPICS } from "./config.js";
+
 const getToggleId = (topicId) => `topic-toggle-${topicId}`;
 
-const createOption = (topicData, isChecked) => {
-  const topicId = topicData.topic.id;
+const getTopicLabel = (topicData) =>
+  TOPICS.find((topic) => topic.id === topicData.topic.id)?.label ?? topicData.topic.title;
 
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.id = getToggleId(topicId);
-  input.dataset.topicId = topicId;
-  input.checked = isChecked;
-
-  const label = document.createElement("label");
-  label.htmlFor = input.id;
-  label.textContent = topicData.topic.title;
-
-  const option = document.createElement("div");
-  option.className = "topic-option";
-  option.append(input, label);
-  return option;
+const createToggle = (topicData, isPressed) => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = getToggleId(topicData.topic.id);
+  button.dataset.topicId = topicData.topic.id;
+  button.textContent = getTopicLabel(topicData);
+  button.setAttribute("aria-pressed", String(isPressed));
+  return button;
 };
 
 const readEnabledTopicIds = (filter) =>
   new Set(
-    [...filter.querySelectorAll("input[type=checkbox]:checked")].map(
-      (input) => input.dataset.topicId,
+    [...filter.querySelectorAll("button[aria-pressed=true]")].map(
+      (button) => button.dataset.topicId,
     ),
   );
 
+const flipPressed = (button) =>
+  button.setAttribute("aria-pressed", String(button.getAttribute("aria-pressed") !== "true"));
+
 export const initTopicFilter = (topics, enabledTopicIds, onChange) => {
   const filter = document.getElementById("topic-filter");
-  const options = topics.map((topicData) =>
-    createOption(topicData, enabledTopicIds.has(topicData.topic.id)),
+  filter.append(
+    ...topics.map((topicData) =>
+      createToggle(topicData, enabledTopicIds.has(topicData.topic.id)),
+    ),
   );
-  filter.append(...options);
-  filter.addEventListener("change", () => onChange(readEnabledTopicIds(filter)));
+  filter.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-topic-id]");
+    if (button === null) {
+      return;
+    }
+    flipPressed(button);
+    onChange(readEnabledTopicIds(filter));
+  });
   filter.hidden = false;
 };

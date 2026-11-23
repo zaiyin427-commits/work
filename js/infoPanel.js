@@ -6,6 +6,7 @@ import {
   sortEventsByDate,
 } from "./seasonStatus.js";
 import { getObservationsInMonth } from "./mapView.js";
+import { formatMonthDayText } from "./dateUtils.js";
 
 const panel = () => document.getElementById("info-panel");
 
@@ -62,9 +63,12 @@ const getBasisText = (year, observedCount, normalCount) => {
   return `${year}${suffix}`;
 };
 
-const createStatusLine = (seasonalNormal, observedEvents, observations, today) => {
+const formatDateBasisLabel = (date) =>
+  `${formatMonthDayText(date)}${MESSAGES.seasonDateBasisSuffix}`;
+
+const createStatusLine = (seasonalNormal, observedEvents, observations, selectedDate) => {
   const isObservationYear =
-    observedEvents !== null && observations.year === today.getFullYear();
+    observedEvents !== null && observations.year === selectedDate.getFullYear();
   const { events, observedCount } = mergeObservedEvents(
     seasonalNormal.events,
     isObservationYear ? observedEvents : [],
@@ -74,9 +78,9 @@ const createStatusLine = (seasonalNormal, observedEvents, observations, today) =
     observedCount,
     seasonalNormal.events.length,
   );
-  const status = getSeasonStatus(events, today);
+  const status = getSeasonStatus(events, selectedDate);
   return createSeasonLine(
-    MESSAGES.seasonTodayLabel,
+    formatDateBasisLabel(selectedDate),
     `${getStatusLabel(status, events)} (${basis})`,
   );
 };
@@ -89,7 +93,7 @@ const createStationLine = (seasonalNormal) => {
   );
 };
 
-const createSeasonSection = (site, topicData, observations, today) => {
+const createSeasonSection = (site, topicData, observations, selectedDate) => {
   const { seasonalNormal } = site;
   const observedEvents = getObservedEvents(site, topicData, observations);
   const section = document.createElement("section");
@@ -106,7 +110,7 @@ const createSeasonSection = (site, topicData, observations, today) => {
     );
   }
   section.append(
-    createStatusLine(seasonalNormal, observedEvents, observations, today),
+    createStatusLine(seasonalNormal, observedEvents, observations, selectedDate),
     createStationLine(seasonalNormal),
   );
   return section;
@@ -116,7 +120,7 @@ export const closeInfoPanel = () => {
   panel().hidden = true;
 };
 
-export const showSiteInfo = (site, month, topicData, observations = null) => {
+export const showSiteInfo = (site, month, topicData, observations, selectedDate) => {
   const body = document.getElementById("info-panel-body");
   document.getElementById("info-panel-title").textContent = site.name;
   document.getElementById("info-panel-topic").textContent =
@@ -125,7 +129,7 @@ export const showSiteInfo = (site, month, topicData, observations = null) => {
     .map((observation) => topicData.species[observation.species])
     .map(createSpeciesEntry);
   const seasonSections = site.seasonalNormal
-    ? [createSeasonSection(site, topicData, observations, new Date())]
+    ? [createSeasonSection(site, topicData, observations, selectedDate)]
     : [];
   body.replaceChildren(...seasonSections, ...entries);
   panel().hidden = false;

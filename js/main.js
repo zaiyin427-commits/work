@@ -1,13 +1,13 @@
 import {
   TOPICS,
   TOPIC_ENABLED_BY_DEFAULT,
-  DEFAULT_MONTH,
+  getToday,
   MESSAGES,
   SEASON_OBSERVATIONS_FILE,
 } from "./config.js";
 import { loadTopicData, loadSeasonObservations } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
-import { initMonthSlider } from "./monthSlider.js";
+import { initDateCalendar } from "./dateCalendar.js";
 import { initPlayControl } from "./playControl.js";
 import { createMigrationAnimation } from "./migrationAnimation.js";
 import { initTopicFilter } from "./topicFilter.js";
@@ -104,7 +104,8 @@ const start = async () => {
   const siteLayer = createSiteLayer(map);
   const migrationAnimation = createMigrationAnimation(map);
   let enabledTopicIds = getDefaultEnabledTopicIds(loaded);
-  let selectedMonth = DEFAULT_MONTH;
+  let selectedDate = getToday();
+  const getSelectedMonth = () => selectedDate.getMonth() + 1;
 
   const getEnabledTopics = () =>
     loaded.filter((topicData) => enabledTopicIds.has(topicData.topic.id));
@@ -115,9 +116,11 @@ const start = async () => {
     const enabledTopics = getEnabledTopics();
     const visibleCount = siteLayer.render(
       enabledTopics,
-      selectedMonth,
-      (site, month, topicData) =>
-        showSiteInfo(site, month, topicData, observations),
+      getSelectedMonth(),
+      (site, month, topicData) => {
+        dateCalendar.collapse();
+        showSiteInfo(site, month, topicData, observations, selectedDate);
+      },
     );
     setEmptyMonthMessageVisible(visibleCount === 0);
   };
@@ -128,18 +131,23 @@ const start = async () => {
     render();
   });
   const playControl = initPlayControl(
-    () => selectedMonth,
-    (month) => monthSlider.setMonth(month),
+    () => selectedDate,
+    (date) => dateCalendar.setDate(date),
   );
-  const monthSlider = initMonthSlider(
-    DEFAULT_MONTH,
-    (month) => {
-      selectedMonth = month;
-      render();
-      migrationAnimation.play(getEnabledTopics(), month);
+  const dateCalendar = initDateCalendar(selectedDate, {
+    onChange: (date) => {
+      const monthChanged = date.getMonth() !== selectedDate.getMonth();
+      selectedDate = date;
+      closeInfoPanel();
+      if (monthChanged) {
+        render();
+        migrationAnimation.play(getEnabledTopics(), getSelectedMonth());
+      }
     },
-    playControl.stop,
-  );
+    onUserInput: playControl.stop,
+    onExpand: closeInfoPanel,
+  });
+  map.on("click", dateCalendar.collapse);
   render();
 };
 

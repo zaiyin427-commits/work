@@ -4,22 +4,33 @@ export const MAP_CONFIG = {
   minZoom: 6,
   maxZoom: 14,
   tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  zoomControlPosition: "bottomright",
   tileAttribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | 관찰 데이터: <a href=\"https://www.gbif.org\">GBIF.org</a> | 계절 정보: 기상청",
 };
 
 export const TOPICS = [
-  { id: "migratory-birds", dataFile: "data/migratory-birds.json" },
-  { id: "cherry-blossom", dataFile: "data/cherry-blossom.json" },
-  { id: "autumn-foliage", dataFile: "data/autumn-foliage.json" },
+  { id: "migratory-birds", label: "철새", dataFile: "data/migratory-birds.json" },
+  { id: "cherry-blossom", label: "벚꽃", dataFile: "data/cherry-blossom.json" },
+  { id: "autumn-foliage", label: "단풍", dataFile: "data/autumn-foliage.json" },
 ];
 
 export const TOPIC_ENABLED_BY_DEFAULT = true;
 
 export const MONTH_MIN = 1;
 export const MONTH_MAX = 12;
+export const MONTHS_PER_YEAR = 12;
 
-export const getDefaultMonth = () => new Date().getMonth() + 1;
-export const DEFAULT_MONTH = getDefaultMonth();
+export const getToday = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
+
+export const CALENDAR = {
+  weekdayLabels: ["일", "월", "화", "수", "목", "금", "토"],
+  isoPartWidth: 2,
+  monthsPerStep: 1,
+  collapseKey: "Escape",
+};
 
 export const MARKER_STYLE = {
   radius: 11,
@@ -41,7 +52,10 @@ export const MESSAGES = {
   daySuffix: "일",
   seasonNormalLabel: "평년(1991–2020)",
   seasonObservedLabelSuffix: "년 관측",
-  seasonTodayLabel: "오늘 기준",
+  seasonDateBasisSuffix: " 기준",
+  yearSuffix: "년",
+  calendarCollapsedMarker: "▾",
+  calendarExpandedMarker: "▴",
   seasonNormalBasis: "평년 기준",
   seasonObservedBasisSuffix: "년 관측 기준",
   seasonPartialObservedBasisSuffix: "년 관측·평년 기준",

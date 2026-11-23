@@ -1,17 +1,17 @@
 import {
-  MESSAGES,
   MONTH_MIN,
   MONTH_MAX,
   SEASON_LEAP_REFERENCE_YEAR,
   SEASON_STATUS,
   SEASON_VIEWING_WINDOW_DAYS,
 } from "./config.js";
+import { getDaysInMonth, formatMonthDayLabel } from "./dateUtils.js";
 
 const MONTH_DAY_PATTERN = /^(\d{2})-(\d{2})$/;
 const MONTH_MULTIPLIER = 100;
 
-const getDaysInMonth = (month) =>
-  new Date(SEASON_LEAP_REFERENCE_YEAR, month, 0).getDate();
+const getReferenceDaysInMonth = (month) =>
+  getDaysInMonth(SEASON_LEAP_REFERENCE_YEAR, month - 1);
 
 export const parseMonthDay = (text) => {
   const match = MONTH_DAY_PATTERN.exec(text);
@@ -23,7 +23,7 @@ export const parseMonthDay = (text) => {
   if (month < MONTH_MIN || month > MONTH_MAX) {
     return null;
   }
-  if (day < 1 || day > getDaysInMonth(month)) {
+  if (day < 1 || day > getReferenceDaysInMonth(month)) {
     return null;
   }
   return { month, day };
@@ -42,7 +42,7 @@ const parseOrThrow = (text) => {
 const getEndOrdinalWithWindow = (lastEvent, year, windowDays) => {
   const end = new Date(year, lastEvent.month - 1, lastEvent.day + windowDays);
   if (end.getFullYear() > year) {
-    return toDayOrdinal(MONTH_MAX, getDaysInMonth(MONTH_MAX));
+    return toDayOrdinal(MONTH_MAX, getReferenceDaysInMonth(MONTH_MAX));
   }
   return toDayOrdinal(end.getMonth() + 1, end.getDate());
 };
@@ -85,5 +85,5 @@ export const getSeasonStatus = (
 
 export const formatMonthDay = (text) => {
   const { month, day } = parseOrThrow(text);
-  return `${month}${MESSAGES.monthSuffix} ${day}${MESSAGES.daySuffix}`;
+  return formatMonthDayLabel(month, day);
 };

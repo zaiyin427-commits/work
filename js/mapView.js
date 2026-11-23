@@ -12,7 +12,9 @@ export const createMap = (containerId) => {
     zoom: MAP_CONFIG.zoom,
     minZoom: MAP_CONFIG.minZoom,
     maxZoom: MAP_CONFIG.maxZoom,
+    zoomControl: false,
   });
+  L.control.zoom({ position: MAP_CONFIG.zoomControlPosition }).addTo(map);
   L.tileLayer(MAP_CONFIG.tileUrl, {
     attribution: MAP_CONFIG.tileAttribution,
     maxZoom: MAP_CONFIG.maxZoom,
