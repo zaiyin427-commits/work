@@ -40,11 +40,10 @@ const ICON_BUILDERS = {
     outlined(`<circle cx="27" cy="13" r="2"/><path d="M28.5 12 L32 13.5 L28.5 15 Z"/>`),
   swan: () =>
     outlined(
-      `<path d="M2 17 C6 20 10 21 15 20 C20 19 24 20 26 22 C26 26 20 26 14 26 C8 26 4 24 2 17 Z"/>`,
+      `<path d="M2.5 14 C3.5 18 7 18.5 10 18 C13 17.2 16 18 19 19 C24 19.5 27 22 25.5 25 C24 28 18 28.5 13 28.5 C6 28.5 2.5 24.5 2.5 14 Z"/>`,
     ) +
-    thickLine("M23 22 C29 17 22 15 22 10 C22 7 19 6.5 17.5 7.5", 3.4) +
-    outlined(`<circle cx="17.5" cy="7.5" r="2.4"/><path d="M16 6.5 L10 8.5 L16 10 Z"/>`) +
-    thickLine("M3 28.5 Q8 26.8 13 28.5 T23 28.5 T29 28.5", 1.2),
+    thickLine("M23 22 C28.5 20 27 15 22 13 C17 11 16.5 6.5 20.5 5.5", 3) +
+    outlined(`<circle cx="21" cy="5.5" r="2.4"/><path d="M22.6 4.6 L28.5 6 L22.6 7.3 Z"/>`),
   duck: () =>
     outlined(
       `<ellipse cx="14" cy="20" rx="9.5" ry="5.8"/>` +
@@ -68,10 +67,11 @@ const ICON_BUILDERS = {
       `<path d="M16 2 L19 8 L23 6 L22 13 L28 11 L26 17 L30 19 L22 22 L23 25 L17 24 L17 30 L15 30 L15 24 L9 25 L10 22 L2 19 L6 17 L4 11 L10 13 L9 6 L13 8 Z"/>`,
     ),
   "ginkgo-leaf": () =>
-    thickLine("M16 21 V29.5", 2) +
+    thickLine("M16 22 V29.5", 1.4) +
     outlined(
-      `<path d="M16 22 C9 20 3 14 4 7 C7 9 10 7 12 5 C14 6 15 7 16 9 C17 7 18 6 20 5 C22 7 25 9 28 7 C29 14 23 20 16 22 Z"/>`,
-    ),
+      `<path d="M16 23 L3 11 C5 7 9 6 12 7 C14 8 15 11 16 16 C17 11 18 8 20 7 C23 6 27 7 29 11 Z"/>`,
+    ) +
+    `<path d="M16 22 L7 10.5 M16 22 L11.5 9.5 M16 22 L20.5 9.5 M16 22 L25 10.5" fill="none" stroke="${SPECIES_ICON.outlineColor}" stroke-width="0.9" stroke-linecap="round"/>`,
 };
 
 export const SPECIES_ICON_IDS = Object.keys(ICON_BUILDERS);
