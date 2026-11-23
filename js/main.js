@@ -3,8 +3,9 @@ import {
   TOPIC_ENABLED_BY_DEFAULT,
   DEFAULT_MONTH,
   MESSAGES,
+  SEASON_OBSERVATIONS_FILE,
 } from "./config.js";
-import { loadTopicData } from "./dataLoader.js";
+import { loadTopicData, loadSeasonObservations } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
 import { initMonthSlider } from "./monthSlider.js";
 import { initPlayControl } from "./playControl.js";
@@ -37,10 +38,10 @@ const showError = (error) => {
 };
 
 const reportLoadFailures = (failures) => {
-  failures.forEach(({ topic, error }) =>
-    console.error(`${MESSAGES.loadFailed} ${topic.dataFile}`, error),
+  failures.forEach(({ file, error }) =>
+    console.error(`${MESSAGES.loadFailed} ${file}`, error),
   );
-  const failedFiles = failures.map(({ topic }) => topic.dataFile).join(", ");
+  const failedFiles = failures.map(({ file }) => file).join(", ");
   displayErrorText(`${MESSAGES.loadFailed} ${failedFiles}`);
 };
 
@@ -64,10 +65,18 @@ const loadAllTopics = async () => {
     if (result.status === "fulfilled") {
       loaded.push(result.value);
     } else {
-      failures.push({ topic: TOPICS[index], error: result.reason });
+      failures.push({ file: TOPICS[index].dataFile, error: result.reason });
     }
   });
   return { loaded, failures };
+};
+
+const loadObservationsOrReport = async () => {
+  try {
+    return { observations: await loadSeasonObservations(SEASON_OBSERVATIONS_FILE), failure: null };
+  } catch (error) {
+    return { observations: null, failure: { file: SEASON_OBSERVATIONS_FILE, error } };
+  }
 };
 
 const getDefaultEnabledTopicIds = (loadedTopics) =>
@@ -79,7 +88,12 @@ const start = async () => {
   if (typeof L === "undefined") {
     throw new StartupError(MESSAGES.mapLibraryFailed);
   }
-  const { loaded, failures } = await loadAllTopics();
+  const [{ loaded, failures: topicFailures }, observationsResult] =
+    await Promise.all([loadAllTopics(), loadObservationsOrReport()]);
+  const { observations } = observationsResult;
+  const failures = observationsResult.failure
+    ? [...topicFailures, observationsResult.failure]
+    : topicFailures;
   if (failures.length > 0) {
     reportLoadFailures(failures);
   }
@@ -102,7 +116,8 @@ const start = async () => {
     const visibleCount = siteLayer.render(
       enabledTopics,
       selectedMonth,
-      showSiteInfo,
+      (site, month, topicData) =>
+        showSiteInfo(site, month, topicData, observations),
     );
     setEmptyMonthMessageVisible(visibleCount === 0);
   };

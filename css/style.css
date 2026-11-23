@@ -117,6 +117,20 @@ body {
   line-height: 1.5;
 }
 
+.season-info {
+  margin: 4px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--muted-color);
+  overflow-wrap: anywhere;
+}
+
+.season-info p {
+  margin: 0 0 3px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted-color);
+}
+
 .species-tips-label {
   font-weight: 700;
   color: var(--muted-color);

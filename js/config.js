@@ -4,7 +4,7 @@ export const MAP_CONFIG = {
   minZoom: 6,
   maxZoom: 14,
   tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  tileAttribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | 관찰 데이터: <a href=\"https://www.gbif.org\">GBIF.org</a>",
+  tileAttribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | 관찰 데이터: <a href=\"https://www.gbif.org\">GBIF.org</a> | 계절 정보: 기상청",
 };
 
 export const TOPICS = [
@@ -38,6 +38,34 @@ export const MESSAGES = {
   monthSuffix: "월",
   playLabel: "▶ 재생",
   pauseLabel: "⏸ 정지",
+  daySuffix: "일",
+  seasonNormalLabel: "평년(1991–2020)",
+  seasonObservedLabelSuffix: "년 관측",
+  seasonTodayLabel: "오늘 기준",
+  seasonNormalBasis: "평년 기준",
+  seasonObservedBasisSuffix: "년 관측 기준",
+  seasonPartialObservedBasisSuffix: "년 관측·평년 기준",
+  seasonStationLabel: "기준 관측소",
+  seasonProxyNote: "근처 관측소",
+  seasonEventSeparator: " · ",
+  seasonBeforeSuffix: " 전",
+};
+
+export const SEASON_OBSERVATIONS_FILE = "data/season-observations.json";
+
+export const SEASON_VIEWING_WINDOW_DAYS = 7;
+
+export const SEASON_LEAP_REFERENCE_YEAR = 2000;
+
+export const SEASON_STATUS = {
+  before: "before",
+  inSeason: "inSeason",
+  after: "after",
+};
+
+export const SEASON_STATUS_LABELS = {
+  [SEASON_STATUS.inSeason]: "볼만한 시기",
+  [SEASON_STATUS.after]: "지난 시기",
 };
 
 export const MIGRATION_ANIMATION = {

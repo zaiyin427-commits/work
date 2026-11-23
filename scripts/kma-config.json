@@ -1,0 +1,27 @@
+{
+  "apiUrl": "https://apihub.kma.go.kr/api/typ01/url/sfc_ssn.php",
+  "allowInsecureApiUrlForTesting": false,
+  "allSeasonsCode": 0,
+  "authKeyEnvironmentVariable": "KMA_AUTH_KEY",
+  "topicDataFiles": ["data/cherry-blossom.json", "data/autumn-foliage.json"],
+  "outputFile": "data/season-observations.json",
+  "requestIntervalMilliseconds": 500,
+  "maxRetries": 2,
+  "retryWaitMilliseconds": 5000,
+  "userAgent": "seasonal-map-updater/0.1",
+  "responseFormat": {
+    "fieldSeparator": null,
+    "observedAtIndex": null,
+    "ssnIdIndex": null,
+    "ssnMdIndex": null,
+    "stationIndex": null
+  },
+  "eventCodes": {
+    "벚나무/개화": null,
+    "벚나무/만발": null,
+    "유명산 단풍/단풍 시작": null,
+    "유명산 단풍/단풍 절정": null,
+    "은행나무/단풍 시작": null,
+    "은행나무/단풍 절정": null
+  }
+}

@@ -20,6 +20,7 @@
       "name": "제주 전농로",
       "lat": 33.5075,
       "lng": 126.5420,
+      "seasonalNormal": { "stationName": "제주", "stationNumber": 184, "isProxy": true, "item": "벚나무", "events": [{ "name": "개화", "date": "03-25" }] },
       "observations": [
         { "species": "king-cherry", "months": [3, 4] }
       ]
@@ -29,6 +30,7 @@
       "name": "진해 여좌천",
       "lat": 35.1480,
       "lng": 128.6640,
+      "seasonalNormal": { "stationName": "창원", "stationNumber": 155, "isProxy": true, "item": "벚나무", "events": [{ "name": "개화", "date": "03-29" }, { "name": "만발", "date": "04-03" }] },
       "observations": [
         { "species": "king-cherry", "months": [3, 4] }
       ]
@@ -38,8 +40,9 @@
       "name": "하동 십리벚꽃길",
       "lat": 35.2100,
       "lng": 127.6300,
+      "seasonalNormal": { "stationName": "진주", "stationNumber": 192, "isProxy": true, "item": "벚나무", "events": [{ "name": "개화", "date": "04-02" }] },
       "observations": [
-        { "species": "king-cherry", "months": [3, 4] }
+        { "species": "king-cherry", "months": [4] }
       ]
     },
     {
@@ -47,6 +50,7 @@
       "name": "경주 보문단지",
       "lat": 35.8400,
       "lng": 129.2900,
+      "seasonalNormal": { "stationName": "포항", "stationNumber": 138, "isProxy": true, "item": "벚나무", "events": [{ "name": "개화", "date": "03-29" }, { "name": "만발", "date": "04-04" }] },
       "observations": [
         { "species": "king-cherry", "months": [3, 4] }
       ]
@@ -65,6 +69,7 @@
       "name": "서울 여의도 윤중로",
       "lat": 37.5280,
       "lng": 126.9180,
+      "seasonalNormal": { "stationName": "서울", "stationNumber": 108, "isProxy": false, "item": "벚나무", "events": [{ "name": "개화", "date": "04-08" }, { "name": "만발", "date": "04-10" }] },
       "observations": [
         { "species": "king-cherry", "months": [4] }
       ]
@@ -74,6 +79,7 @@
       "name": "강릉 경포대",
       "lat": 37.7950,
       "lng": 128.9080,
+      "seasonalNormal": { "stationName": "북강릉", "stationNumber": 104, "isProxy": true, "item": "벚나무", "events": [{ "name": "개화", "date": "04-04" }, { "name": "만발", "date": "04-07" }] },
       "observations": [
         { "species": "king-cherry", "months": [4] }
       ]
