@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>계절 생물 지도</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div id="map"></div>
+  <p id="error-message" role="alert" hidden></p>
+  <p id="empty-month-message" hidden>이 달에는 표시할 도래지가 없습니다.</p>
+  <aside id="info-panel" hidden>
+    <button type="button" id="info-panel-close" aria-label="닫기">&times;</button>
+    <h2 id="info-panel-title"></h2>
+    <div id="info-panel-body"></div>
+  </aside>
+  <footer id="slider-bar">
+    <label for="month-slider">월 선택</label>
+    <input type="range" id="month-slider" min="1" max="12" step="1" value="1">
+    <output id="month-label" for="month-slider"></output>
+  </footer>
+</body>
+</html>
