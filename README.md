@@ -93,8 +93,11 @@ node scripts/updateSeasonObservations.mjs --inspect 108   # 관측소 번호의 
 
 설정은 `scripts/kma-config.json`. 첫 `--write` 전에 `--inspect <관측소번호> --year <YYYY>`로 응답을 확인하고 `eventCodes`와 `responseFormat`을 모두 채워야 한다(비어 있으면 스크립트가 요청 전에 멈춘다).
 
+- 응답이 `responseFormat.headerColumns` 열 이름을 담은 `#` 헤더 줄만 있고 자료 행이 없으면 그 관측소는 해당 연도 "관측 없음"으로 경고만 출력하고 계속 진행한다(헤더도 없는 빈 응답이나 오류 응답은 그대로 중단).
+- `eventCodes`는 관측소 108(2026년)의 실제 응답과 기상자료개방포털의 항목 순서(DB006xxx)를 보고 채운 추정값이며, 기상청 공식 코드표에서 가져온 것이 아니다.
 - `responseFormat`: `fieldSeparator`(`,` `;` `|` `tab` `whitespace` 중 하나)와 관측소·관측일·계절 코드 열의 0부터 시작하는 번호(`stationIndex`, `observedAtIndex`, `ssnIdIndex`, `ssnMdIndex`).
-- 응답이 오류이거나 자료 행이 없거나 날짜·연도·관측소가 맞지 않으면 중단하며, 기존 관측값을 빈 결과로 덮어쓰지 않는다.
+- 응답이 오류이거나 자료 행이 없거나 날짜·연도·관측소가 맞지 않으면 중단하며, 기존 파일에 이벤트가 하나라도 있으면(연도와 무관) 0건 결과로 덮어쓰지 않는다. 리다이렉트(3xx) 응답은 인증키 유출을 막기 위해 따라가지 않고 실패로 처리한다.
+- `allowInsecureApiUrlForTesting`은 로컬 루프백(127.0.0.1) 테스트 전용이며, 커밋되는 설정에서는 반드시 `false`로 둔다.
 
 ## 새 소재 추가
 

@@ -9,19 +9,21 @@
   "maxRetries": 2,
   "retryWaitMilliseconds": 5000,
   "userAgent": "seasonal-map-updater/0.1",
+  "responseEncoding": "euc-kr",
   "responseFormat": {
-    "fieldSeparator": null,
-    "observedAtIndex": null,
-    "ssnIdIndex": null,
-    "ssnMdIndex": null,
-    "stationIndex": null
+    "fieldSeparator": ",",
+    "observedAtIndex": 2,
+    "ssnIdIndex": 3,
+    "ssnMdIndex": 4,
+    "stationIndex": 1,
+    "headerColumns": ["YY", "STN", "TM", "SSN_ID", "SSN_MD"]
   },
   "eventCodes": {
-    "벚나무/개화": null,
-    "벚나무/만발": null,
-    "유명산 단풍/단풍 시작": null,
-    "유명산 단풍/단풍 절정": null,
-    "은행나무/단풍 시작": null,
-    "은행나무/단풍 절정": null
+    "벚나무/개화": { "ssnId": 205, "ssnMd": 202 },
+    "벚나무/만발": { "ssnId": 205, "ssnMd": 203 },
+    "유명산 단풍/단풍 시작": { "ssnId": 501, "ssnMd": 501 },
+    "유명산 단풍/단풍 절정": { "ssnId": 501, "ssnMd": 503 },
+    "은행나무/단풍 시작": { "ssnId": 301, "ssnMd": 301 },
+    "은행나무/단풍 절정": { "ssnId": 301, "ssnMd": 302 }
   }
 }

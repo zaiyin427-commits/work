@@ -8,6 +8,8 @@ const WRITE_FLAG = "--write";
 const YEAR_FLAG = "--year";
 const INSPECT_FLAG = "--inspect";
 const HTTP_TOO_MANY_REQUESTS = 429;
+const HTTP_REDIRECT_MINIMUM = 300;
+const HTTP_REDIRECT_EXCLUSIVE_MAXIMUM = 400;
 const EXIT_FAILURE = 1;
 const MASK = "***";
 const OUTPUT_SOURCE_NAME = "기상청 계절관측";
@@ -18,8 +20,10 @@ const LOOPBACK_HOST = "127.0.0.1";
 const FIELD_SEPARATORS = { ",": ",", ";": ";", "|": "|", tab: "\t", whitespace: /\s+/ };
 const RESPONSE_FORMAT_KEYS = ["fieldSeparator", "observedAtIndex", "ssnIdIndex", "ssnMdIndex", "stationIndex"];
 const COMMENT_PREFIX = "#";
+const HEADER_TOKEN_SEPARATOR_PATTERN = /[\s,;|]+/;
 const OBSERVED_AT_PATTERN = /^(\d{4})-?(\d{2})-?(\d{2})/;
 const YEAR_PATTERN = /^\d{4}$/;
+const DIGITS_PATTERN = /^\d+$/;
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -34,11 +38,21 @@ const isCodeValue = (value) => isNonEmptyString(value) || Number.isInteger(value
 const isEventCode = (value) => value === null
   || (isPlainObject(value) && isCodeValue(value.ssnId) && (value.ssnMd === null || isCodeValue(value.ssnMd)));
 const isEventCodeMap = (value) => isPlainObject(value) && Object.values(value).every(isEventCode);
+const isSupportedEncoding = (value) => {
+  if (!isNonEmptyString(value)) return false;
+  try {
+    new TextDecoder(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
 const isBoolean = (value) => typeof value === "boolean";
 const isFieldSeparatorName = (value) => value === null || (typeof value === "string" && Object.hasOwn(FIELD_SEPARATORS, value));
 const isNullOrIndex = (value) => value === null || isNonNegativeInteger(value);
 const isResponseFormat = (value) => isPlainObject(value)
   && isFieldSeparatorName(value.fieldSeparator)
+  && isStringArray(value.headerColumns)
   && RESPONSE_FORMAT_KEYS.filter((key) => key !== "fieldSeparator").every((key) => isNullOrIndex(value[key]));
 const parseUrl = (value) => {
   try {
@@ -65,8 +79,9 @@ const CONFIG_RULES = [
   ["retryWaitMilliseconds", isNonNegativeNumber, "0 이상의 숫자"],
   ["maxRetries", isNonNegativeInteger, "0 이상의 정수"],
   ["userAgent", isNonEmptyString, "비어 있지 않은 문자열"],
+  ["responseEncoding", isSupportedEncoding, "TextDecoder가 지원하는 인코딩 이름"],
   ["eventCodes", isEventCodeMap, "값이 null 또는 { ssnId, ssnMd } 인 객체"],
-  ["responseFormat", isResponseFormat, `fieldSeparator는 null 또는 ${Object.keys(FIELD_SEPARATORS).join(" / ")}, 나머지 ${RESPONSE_FORMAT_KEYS.length - 1}개는 null 또는 0 이상의 정수인 객체`],
+  ["responseFormat", isResponseFormat, `fieldSeparator는 null 또는 ${Object.keys(FIELD_SEPARATORS).join(" / ")}, 나머지 ${RESPONSE_FORMAT_KEYS.length - 1}개는 null 또는 0 이상의 정수, headerColumns는 비어 있지 않은 문자열 배열인 객체`],
 ];
 
 const validateConfig = (config) => {
@@ -147,24 +162,38 @@ const extractApiMessage = (bodyText) => {
   }
 };
 
+const isRedirect = (response) => response.status >= HTTP_REDIRECT_MINIMUM && response.status < HTTP_REDIRECT_EXCLUSIVE_MAXIMUM;
+
 const describeFailure = (response, bodyText, maskedUrl) => {
+  if (isRedirect(response)) {
+    const location = response.headers.get("location");
+    const locationText = location === null ? "Location 헤더 없음" : `Location: ${location}`;
+    return `기상청 요청이 리다이렉트되어 중단합니다: HTTP ${response.status}, ${locationText} (${maskedUrl}). 인증키가 다른 주소로 전송되지 않도록 따라가지 않습니다. apiUrl 설정을 확인하세요.`;
+  }
   const apiMessage = extractApiMessage(bodyText);
   const detail = apiMessage === null ? "" : `, API 메시지: ${apiMessage}`;
   return `기상청 요청 실패: HTTP ${response.status}${detail} (${maskedUrl})`;
 };
 
+const describeNetworkError = (error) => {
+  const cause = error.cause;
+  if (cause === undefined || cause === null) return error.message;
+  const code = cause.code === undefined ? "" : `${cause.code} `;
+  return `${error.message} (원인: ${code}${cause.message ?? cause})`;
+};
+
 const fetchResponse = async (url, config, mask) => {
   try {
-    return await fetch(url, { headers: { "User-Agent": config.userAgent } });
+    return await fetch(url, { headers: { "User-Agent": config.userAgent }, redirect: "manual" });
   } catch (error) {
-    throw new Error(`네트워크 오류: ${mask(error.message)} (${mask(url)})`);
+    throw new Error(`네트워크 오류: ${mask(describeNetworkError(error))} (${mask(url)})`);
   }
 };
 
 const fetchTextWithRetry = async (url, config, mask) => {
   for (let attempt = 0; attempt <= config.maxRetries; attempt += 1) {
     const response = await fetchResponse(url, config, mask);
-    const bodyText = await response.text();
+    const bodyText = new TextDecoder(config.responseEncoding).decode(await response.arrayBuffer());
     if (response.ok) {
       return bodyText;
     }
@@ -182,8 +211,20 @@ const isValidMonthDay = (year, month, day) => {
   return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 };
 
+const codesMatch = (actual, expected) => {
+  const actualText = String(actual).trim();
+  const expectedText = String(expected).trim();
+  if (DIGITS_PATTERN.test(actualText) && DIGITS_PATTERN.test(expectedText)) {
+    return Number(actualText) === Number(expectedText);
+  }
+  return actualText === expectedText;
+};
+
 const parseObservationLine = (line, responseFormat, stationNumber, year) => {
   const fields = line.split(FIELD_SEPARATORS[responseFormat.fieldSeparator]).map((field) => field.trim());
+  if (fields.length > 1 && fields[fields.length - 1] === "") {
+    fields.pop();
+  }
   const requiredFieldCount = Math.max(...RESPONSE_FORMAT_KEYS
     .filter((key) => key !== "fieldSeparator")
     .map((key) => responseFormat[key])) + 1;
@@ -201,7 +242,7 @@ const parseObservationLine = (line, responseFormat, stationNumber, year) => {
   if (!isValidMonthDay(year, Number(month), Number(day))) {
     throw new Error(`존재하지 않는 날짜입니다: ${month}-${day}`);
   }
-  if (fields[responseFormat.stationIndex] !== String(stationNumber)) {
+  if (!codesMatch(fields[responseFormat.stationIndex], stationNumber)) {
     throw new Error(`요청한 관측소 ${stationNumber}이 아닌 ${fields[responseFormat.stationIndex]} 자료입니다`);
   }
   return {
@@ -225,6 +266,13 @@ const parseObservationRows = (bodyText, responseFormat, stationNumber, year) => 
   return rows;
 };
 
+const hasExpectedHeaderLine = (bodyText, headerColumns) => bodyText.split(/\r?\n/).some((line) => {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith(COMMENT_PREFIX)) return false;
+  const tokens = trimmed.slice(COMMENT_PREFIX.length).split(HEADER_TOKEN_SEPARATOR_PATTERN);
+  return headerColumns.every((column) => tokens.includes(column));
+});
+
 const parseStationBody = (bodyText, config, stationNumber, year) => {
   const apiMessage = extractApiMessage(bodyText);
   if (apiMessage !== null) {
@@ -236,6 +284,9 @@ const parseStationBody = (bodyText, config, stationNumber, year) => {
   } catch (error) {
     throw new Error(`관측소 ${stationNumber}: ${error.message}`);
   }
+  if (rows.length === 0 && hasExpectedHeaderLine(bodyText, config.responseFormat.headerColumns)) {
+    return rows;
+  }
   if (rows.length === 0) {
     throw new Error(`관측소 ${stationNumber}: 응답에 자료 행이 없습니다. 기존 관측값을 지키기 위해 중단합니다. ${INSPECT_FLAG} ${stationNumber} --year ${year} 로 원본 응답을 확인하세요.`);
   }
@@ -244,8 +295,8 @@ const parseStationBody = (bodyText, config, stationNumber, year) => {
 
 const findEventDate = (rows, eventCode) => {
   const matchedDates = rows
-    .filter((row) => row.ssnId === String(eventCode.ssnId)
-      && (eventCode.ssnMd === null || row.ssnMd === String(eventCode.ssnMd)))
+    .filter((row) => codesMatch(row.ssnId, eventCode.ssnId)
+      && (eventCode.ssnMd === null || codesMatch(row.ssnMd, eventCode.ssnMd)))
     .map((row) => row.monthDay)
     .sort();
   return matchedDates[0] ?? null;
@@ -306,7 +357,11 @@ const fetchStationRows = async (stationNumbers, config, authKey, year, mask) => 
     }
     const url = buildRequestUrl(config, authKey, stationNumber, year, false);
     const bodyText = await fetchTextWithRetry(url, config, mask);
-    rowsByStation.set(stationNumber, parseStationBody(bodyText, config, stationNumber, year));
+    const rows = parseStationBody(bodyText, config, stationNumber, year);
+    if (rows.length === 0) {
+      console.warn(`경고: 관측소 ${stationNumber}는 ${year}년 관측 자료가 없습니다(관측 없음). 해당 관측소의 지점은 이벤트 없이 처리합니다.`);
+    }
+    rowsByStation.set(stationNumber, rows);
   }
   return rowsByStation;
 };
@@ -335,11 +390,14 @@ const printSite = ({ topicId, site, normal, observed }) => {
   console.log(`  관측: ${observedText}`);
 };
 
-const printSummary = (results, stationCount, year, shouldWrite) => {
+const printSummary = (results, stationCount, emptyStationNumbers, year, shouldWrite) => {
   const observedSites = results.filter((result) => result.observed.length > 0).length;
   const observedEvents = results.reduce((sum, result) => sum + result.observed.length, 0);
   console.log("");
   console.log(`요약: ${year}년, 관측소 ${stationCount}곳 조회, 지점 ${results.length}곳 중 ${observedSites}곳에서 이벤트 ${observedEvents}건 관측`);
+  if (emptyStationNumbers.length > 0) {
+    console.log(`관측 자료가 없는 관측소: ${emptyStationNumbers.join(", ")}`);
+  }
   if (!shouldWrite) {
     console.log(`드라이런이므로 파일을 쓰지 않았습니다. 반영하려면 ${WRITE_FLAG} 옵션으로 실행하세요.`);
   }
@@ -375,9 +433,8 @@ const countEvents = (sites) => Object.values(isPlainObject(sites) ? sites : {})
   .reduce((sum, events) => sum + (Array.isArray(events) ? events.length : 0), 0);
 
 const assertNotEmptyingExistingOutput = (existing, output, outputFile) => {
-  if (existing !== null && existing.year === output.year
-    && countEvents(existing.sites) > 0 && countEvents(output.sites) === 0) {
-    throw new Error(`${outputFile}에 ${output.year}년 이벤트 ${countEvents(existing.sites)}건이 있는데 새 결과는 0건이라 덮어쓰지 않고 중단합니다. eventCodes와 responseFormat 설정을 확인하세요.`);
+  if (existing !== null && countEvents(existing.sites) > 0 && countEvents(output.sites) === 0) {
+    throw new Error(`${outputFile}에 ${existing.year}년 이벤트 ${countEvents(existing.sites)}건이 있는데 새 결과(${output.year}년)는 0건이라 덮어쓰지 않고 중단합니다. eventCodes와 responseFormat 설정을 확인하세요.`);
   }
 };
 
@@ -407,7 +464,8 @@ const runUpdate = async (config, authKey, options, mask) => {
   const rowsByStation = await fetchStationRows(stationNumbers, config, authKey, options.year, mask);
   const results = sites.map((entry) => observeSite(entry, rowsByStation, config));
   results.forEach(printSite);
-  printSummary(results, stationNumbers.length, options.year, options.shouldWrite);
+  const emptyStationNumbers = stationNumbers.filter((stationNumber) => rowsByStation.get(stationNumber).length === 0);
+  printSummary(results, stationNumbers.length, emptyStationNumbers, options.year, options.shouldWrite);
   if (options.shouldWrite) {
     await writeOutput(config, buildOutput(results, options.year));
   }
