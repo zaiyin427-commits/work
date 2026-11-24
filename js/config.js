@@ -86,6 +86,7 @@ export const MESSAGES = {
   legendRealTrackPrefix: "실제 GPS 추적: ",
   legendRealTrackCount: "1마리",
   legendSeasonSeparator: "–",
+  legendStayArea: "머문 지역 (실제 GPS, 0.1° 반올림 기준)",
   legendEstimated: "추정 경로 (번식지 대략값 기준)",
   legendSourcePrefix: "추적 자료: ",
   trackSpeciesMissing: "실제 추적의 종이 철새 데이터에 없어 대체 색을 사용합니다:",
@@ -154,7 +155,17 @@ export const REAL_TRACK = {
   dotFillOpacity: 1,
   dotStrokeColor: "#ffffff",
   dotStrokeWeight: 2,
+  stayAreaClassName: "real-track-stay-area",
+  stayAreaMaxSpreadKilometers: 30,
+  stayAreaRoundingMarginKilometers: 7,
+  stayAreaMinRadiusKilometers: 10,
+  stayAreaStrokeWeight: 2,
+  stayAreaStrokeOpacity: 0.8,
+  stayAreaFillOpacity: 0.25,
 };
+
+export const EARTH_RADIUS_KILOMETERS = 6371;
+export const METERS_PER_KILOMETER = 1000;
 
 export const MAP_LEGEND = {
   topicId: MIGRATORY_BIRDS_TOPIC_ID,

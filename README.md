@@ -24,7 +24,7 @@ js/dateCalendar.js          날짜 달력(선택 날짜, 이전/다음 달, 오�
 js/dateUtils.js             날짜 계산 도우미
 js/migrationAnimation.js    철새 이동 애니메이션
 js/realTrack.js             실제 GPS 추적 경로 표시
-js/mapLegend.js             지도 범례(실제·추정 경로, 자료 출처)
+js/mapLegend.js             지도 범례(실제 경로·머문 지역·추정 경로, 자료 출처)
 js/playControl.js           날짜 자동 재생 버튼(달력 안)
 js/infoPanel.js             종 설명·관찰 팁 패널
 js/seasonStatus.js          계절 시기 계산(평년값·관측값 기준)
@@ -123,7 +123,7 @@ node scripts/updateSeasonObservations.mjs --inspect 108   # 관측소 번호의 
 
 ## 철새 실제 추적 경로
 
-재두루미 1마리('Borzya')의 2017–2018 시즌(2017-09-01 ~ 2018-04-30) 실제 GPS 경로를 보여준다. 하루 1점(그날 위치의 중앙값)이고, 좌표는 0.1도로 반올림했으며, 번식기(5–8월)는 제외했다. 점선 애니메이션 선은 재두루미를 포함해 모두 대략적인 번식 지역을 바탕으로 한 추정 경로이며, 실제 GPS 경로는 실선뿐이다.
+재두루미 1마리('Borzya')의 2017–2018 시즌(2017-09-01 ~ 2018-04-30) 실제 GPS 경로를 보여준다. 하루 1점(그날 위치의 중앙값)이고, 좌표는 0.1도로 반올림했으며, 번식기(5–8월)는 제외했다. 점선 애니메이션 선은 재두루미를 포함해 모두 대략적인 번식 지역을 바탕으로 한 추정 경로이며, 실제 GPS 경로는 실선뿐이다. 다만 그 달의 점들이 날짜별 가중 중심에서 30km(`REAL_TRACK.stayAreaMaxSpreadKilometers`) 이내에 모여 있으면(철원 등 월동지에 머무는 11–2월) 좌우로 왔다 갔다 하는 직선 대신 반투명 원('머문 지역')으로 그리고 움직이는 점도 생략한다. 원의 반지름은 중심에서 가장 먼 점까지의 거리에 0.1° 반올림 오차 여유(`stayAreaRoundingMarginKilometers`)를 더한 값이며 최소 `stayAreaMinRadiusKilometers`이다. 이동이 있는 달(10월·3월 등)은 기존처럼 실선과 움직이는 점으로 그린다.
 
 데이터 출처: Movebank Data Repository, Batbayar N, Galtbalt B, Natsagdorj T, Sukhbaatar T, Wikelski M. 2024. Data from: Study "White-naped crane Mongolia WSCC". https://doi.org/10.5441/001/1.600 (CC BY-NC 4.0, 비영리 용도로만 사용). 관련 논문: Yanco SW et al. 2024, PNAS, https://doi.org/10.1073/pnas.2316827121
 

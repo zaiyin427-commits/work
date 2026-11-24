@@ -2,6 +2,8 @@ import {
   MIGRATION_ANIMATION,
   REAL_TRACK,
   MESSAGES,
+  EARTH_RADIUS_KILOMETERS,
+  METERS_PER_KILOMETER,
   ISO_DATE_PATTERN,
   FALLBACK_MARKER_COLOR,
 } from "./config.js";
@@ -44,6 +46,37 @@ export const getTrackColor = (track, topicDataList, topicId) => {
   return color;
 };
 
+const toRadians = (degrees) => (degrees * Math.PI) / 180;
+
+const getGreatCircleKilometers = (from, to) => {
+  const latitudeDelta = toRadians(to[0] - from[0]);
+  const longitudeDelta = toRadians(to[1] - from[1]);
+  const haversine =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(toRadians(from[0])) * Math.cos(toRadians(to[0])) * Math.sin(longitudeDelta / 2) ** 2;
+  return 2 * EARTH_RADIUS_KILOMETERS * Math.asin(Math.sqrt(haversine));
+};
+
+const getCentroid = (points) => [
+  points.reduce((sum, point) => sum + point[0], 0) / points.length,
+  points.reduce((sum, point) => sum + point[1], 0) / points.length,
+];
+
+export const getStayArea = (points) => {
+  const center = getCentroid(points);
+  const spreadKilometers = Math.max(
+    ...points.map((point) => getGreatCircleKilometers(center, point)),
+  );
+  if (spreadKilometers > REAL_TRACK.stayAreaMaxSpreadKilometers) {
+    return null;
+  }
+  const radiusKilometers = Math.max(
+    spreadKilometers + REAL_TRACK.stayAreaRoundingMarginKilometers,
+    REAL_TRACK.stayAreaMinRadiusKilometers,
+  );
+  return { center, radiusKilometers };
+};
+
 const getDistance = (from, to) => Math.hypot(to[0] - from[0], to[1] - from[1]);
 
 const getPointAlongPath = (points, ratio) => {
@@ -68,6 +101,19 @@ const createPath = (points, color) =>
     weight: REAL_TRACK.pathWeight,
     opacity: REAL_TRACK.pathOpacity,
     className: REAL_TRACK.pathClassName,
+    pane: MIGRATION_ANIMATION.paneName,
+    interactive: false,
+  });
+
+const createStayArea = ({ center, radiusKilometers }, color) =>
+  L.circle(center, {
+    radius: radiusKilometers * METERS_PER_KILOMETER,
+    color,
+    weight: REAL_TRACK.stayAreaStrokeWeight,
+    opacity: REAL_TRACK.stayAreaStrokeOpacity,
+    fillColor: color,
+    fillOpacity: REAL_TRACK.stayAreaFillOpacity,
+    className: REAL_TRACK.stayAreaClassName,
     pane: MIGRATION_ANIMATION.paneName,
     interactive: false,
   });
@@ -105,19 +151,25 @@ export const createRealTrack = (map, tracks) => {
         points: getMonthSegment(data, month),
         color: getTrackColor(data, loadedTopics, topicId),
       }))
-      .filter(({ points }) => points.length > 0);
+      .filter(({ points }) => points.length > 0)
+      .map((segment) => ({ ...segment, stayArea: getStayArea(segment.points) }));
 
   const draw = (loadedTopics, month) => {
     clear();
     segments = collectSegments(loadedTopics, month);
-    segments.forEach(({ points, color }) => createPath(points, color).addTo(layer));
+    segments.forEach(({ points, stayArea, color }) => {
+      const shape =
+        stayArea === null ? createPath(points, color) : createStayArea(stayArea, color);
+      shape.addTo(layer);
+    });
   };
 
   const animate = () => {
-    if (segments.length === 0 || prefersReducedMotion()) {
+    const movingSegments = segments.filter(({ stayArea }) => stayArea === null);
+    if (movingSegments.length === 0 || prefersReducedMotion()) {
       return;
     }
-    const dots = segments.map(({ points, color }) => ({
+    const dots = movingSegments.map(({ points, color }) => ({
       points,
       dot: createDot(points[0], color).addTo(layer),
     }));

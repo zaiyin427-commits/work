@@ -58,10 +58,13 @@ const fillSource = (sourceElement, track) => {
 export const initMapLegend = (tracks, topicDataList) => {
   const legend = document.getElementById("map-legend");
   const realRow = document.getElementById("legend-real-track");
+  const stayRow = document.getElementById("legend-stay-area");
   const sourceElement = document.getElementById("legend-source");
   document.getElementById("legend-estimated-text").textContent = MESSAGES.legendEstimated;
+  document.getElementById("legend-stay-area-text").textContent = MESSAGES.legendStayArea;
   const [firstTrack] = tracks;
   realRow.hidden = firstTrack === undefined;
+  stayRow.hidden = firstTrack === undefined;
   sourceElement.hidden = firstTrack === undefined;
   if (tracks.length > 1) {
     console.warn(MESSAGES.legendMultipleTracks);
@@ -69,9 +72,9 @@ export const initMapLegend = (tracks, topicDataList) => {
   if (firstTrack !== undefined) {
     const { data, topicId } = firstTrack;
     document.getElementById("legend-real-track-text").textContent = formatRealTrackLabel(data);
-    realRow.style.setProperty(
-      MAP_LEGEND.swatchColorProperty,
-      getTrackColor(data, topicDataList, topicId),
+    const trackColor = getTrackColor(data, topicDataList, topicId);
+    [realRow, stayRow].forEach((row) =>
+      row.style.setProperty(MAP_LEGEND.swatchColorProperty, trackColor),
     );
     fillSource(sourceElement, data);
   }
