@@ -13,7 +13,7 @@ const getPointMonth = (point) => Number(ISO_DATE_PATTERN.exec(point[0])[2]);
 
 const toLatLng = (point) => [point[1], point[2]];
 
-export const getMonthSegment = (track, month) => {
+const getMonthSegment = (track, month) => {
   const firstIndex = track.points.findIndex((point) => getPointMonth(point) === month);
   if (firstIndex === -1) {
     return [];
@@ -62,19 +62,75 @@ const getCentroid = (points) => [
   points.reduce((sum, point) => sum + point[1], 0) / points.length,
 ];
 
-export const getStayArea = (points) => {
-  const center = getCentroid(points);
-  const spreadKilometers = Math.max(
-    ...points.map((point) => getGreatCircleKilometers(center, point)),
+const getSpreadKilometers = (points, center) =>
+  Math.max(...points.map((point) => getGreatCircleKilometers(center, point)));
+
+const getMaxPairDistanceKilometers = (points) =>
+  Math.max(
+    ...points.flatMap((from, fromIndex) =>
+      points.slice(fromIndex + 1).map((to) => getGreatCircleKilometers(from, to)),
+    ),
   );
-  if (spreadKilometers > REAL_TRACK.stayAreaMaxSpreadKilometers) {
-    return null;
+
+const isWithinStaySpread = (points) =>
+  getMaxPairDistanceKilometers(points) <= REAL_TRACK.stayAreaMaxSpreadKilometers;
+
+const getCompactRunEndIndex = (points, startIndex) => {
+  let endIndex = startIndex + 1;
+  while (endIndex < points.length && isWithinStaySpread(points.slice(startIndex, endIndex + 1))) {
+    endIndex += 1;
   }
+  return endIndex;
+};
+
+const splitIntoRuns = (points) => {
+  const runs = [];
+  let startIndex = 0;
+  while (startIndex < points.length) {
+    const compactEndIndex = getCompactRunEndIndex(points, startIndex);
+    const isStay = compactEndIndex - startIndex >= REAL_TRACK.stayAreaMinimumRecords;
+    const endIndex = isStay ? compactEndIndex : startIndex + 1;
+    runs.push({ isStay, points: points.slice(startIndex, endIndex) });
+    startIndex = endIndex;
+  }
+  return runs;
+};
+
+const getRoundingMarginKilometers = (precisionDegrees, latitude) => {
+  const cellHeightKilometers = toRadians(precisionDegrees) * EARTH_RADIUS_KILOMETERS;
+  const cellWidthKilometers = cellHeightKilometers * Math.cos(toRadians(latitude));
+  return Math.hypot(cellHeightKilometers, cellWidthKilometers) / REAL_TRACK.roundingMarginDiagonalDivisor;
+};
+
+const getStayArea = (points, precisionDegrees) => {
+  const center = getCentroid(points);
   const radiusKilometers = Math.max(
-    spreadKilometers + REAL_TRACK.stayAreaRoundingMarginKilometers,
+    getSpreadKilometers(points, center) + getRoundingMarginKilometers(precisionDegrees, center[0]),
     REAL_TRACK.stayAreaMinRadiusKilometers,
   );
   return { center, radiusKilometers };
+};
+
+const describeRun = ({ isStay, points }, precisionDegrees) => {
+  if (!isStay) {
+    return { stayArea: null, displayPoints: points };
+  }
+  const stayArea = getStayArea(points, precisionDegrees);
+  return { stayArea, displayPoints: [stayArea.center] };
+};
+
+const hasEnoughDistinctPoints = (points) =>
+  new Set(points.map((point) => point.join())).size >= REAL_TRACK.pathMinimumDistinctPoints;
+
+const getMonthShapes = (track, month) => {
+  const runs = splitIntoRuns(getMonthSegment(track, month)).map((run) =>
+    describeRun(run, track.precisionDegrees),
+  );
+  const displayPath = runs.flatMap(({ displayPoints }) => displayPoints);
+  return {
+    stayAreas: runs.map(({ stayArea }) => stayArea).filter((stayArea) => stayArea !== null),
+    path: hasEnoughDistinctPoints(displayPath) ? displayPath : null,
+  };
 };
 
 const getDistance = (from, to) => Math.hypot(to[0] - from[0], to[1] - from[1]);
@@ -148,30 +204,29 @@ export const createRealTrack = (map, tracks) => {
     tracks
       .filter(({ topicId }) => loadedTopics.some((topicData) => topicData.topic.id === topicId))
       .map(({ topicId, data }) => ({
-        points: getMonthSegment(data, month),
+        ...getMonthShapes(data, month),
         color: getTrackColor(data, loadedTopics, topicId),
-      }))
-      .filter(({ points }) => points.length > 0)
-      .map((segment) => ({ ...segment, stayArea: getStayArea(segment.points) }));
+      }));
 
   const draw = (loadedTopics, month) => {
     clear();
     segments = collectSegments(loadedTopics, month);
-    segments.forEach(({ points, stayArea, color }) => {
-      const shape =
-        stayArea === null ? createPath(points, color) : createStayArea(stayArea, color);
-      shape.addTo(layer);
+    segments.forEach(({ stayAreas, path, color }) => {
+      stayAreas.forEach((stayArea) => createStayArea(stayArea, color).addTo(layer));
+      if (path !== null) {
+        createPath(path, color).addTo(layer);
+      }
     });
   };
 
   const animate = () => {
-    const movingSegments = segments.filter(({ stayArea }) => stayArea === null);
+    const movingSegments = segments.filter(({ path }) => path !== null);
     if (movingSegments.length === 0 || prefersReducedMotion()) {
       return;
     }
-    const dots = movingSegments.map(({ points, color }) => ({
-      points,
-      dot: createDot(points[0], color).addTo(layer),
+    const dots = movingSegments.map(({ path, color }) => ({
+      path,
+      dot: createDot(path[0], color).addTo(layer),
     }));
     const startTime = performance.now();
     const step = (now) => {
@@ -181,7 +236,7 @@ export const createRealTrack = (map, tracks) => {
         frameId = null;
         return;
       }
-      dots.forEach(({ points, dot }) => dot.setLatLng(getPointAlongPath(points, ratio)));
+      dots.forEach(({ path, dot }) => dot.setLatLng(getPointAlongPath(path, ratio)));
       frameId = requestAnimationFrame(step);
     };
     frameId = requestAnimationFrame(step);
