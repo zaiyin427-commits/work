@@ -1,13 +1,16 @@
 import { FESTIVAL, MESSAGES } from "./config.js";
-import { getDaysBetween, formatMonthDayText, createClampedDate } from "./dateUtils.js";
+import { formatMonthDayText, createClampedDate } from "./dateUtils.js";
 import { getDistanceKilometers } from "./geoUtils.js";
 import { mergeObservedEvents, parseMonthDay } from "./seasonStatus.js";
-import { parseFestival, formatPeriod, createTextElement } from "./festivalLayer.js";
+import { formatPeriod, createTextElement } from "./festivalLayer.js";
+import {
+  parseFestival,
+  overlapsYear,
+  getFestivalState,
+  formatCompactStatusText,
+} from "./festivalStatus.js";
 
 const classOf = (suffix) => `${FESTIVAL.nearbyClassPrefix}${suffix}`;
-
-const overlapsYear = (festival, year) =>
-  festival.start.getFullYear() <= year && festival.end.getFullYear() >= year;
 
 const compareNearby = (a, b) =>
   a.distance - b.distance || a.festival.start.getTime() - b.festival.start.getTime();
@@ -25,20 +28,6 @@ const formatDistance = (distance) =>
   distance < FESTIVAL.nearbyMinimumDistanceKilometers
     ? `${FESTIVAL.nearbyMinimumDistanceKilometers}${MESSAGES.kilometerUnit}${MESSAGES.nearbyDistanceUnderMinimumSuffix}`
     : `${MESSAGES.nearbyDistancePrefix}${Math.round(distance)}${MESSAGES.kilometerUnit}`;
-
-const getNearbyStatusText = (festival, selectedDate) => {
-  const daysUntilStart = getDaysBetween(selectedDate, festival.start);
-  const daysUntilEnd = getDaysBetween(selectedDate, festival.end);
-  if (daysUntilStart > 0) {
-    return `${MESSAGES.festivalDDayPrefix}${daysUntilStart}`;
-  }
-  if (daysUntilEnd < 0) {
-    return MESSAGES.festivalStatusEnded;
-  }
-  return daysUntilEnd === 0
-    ? `${MESSAGES.festivalStatusOngoing}${MESSAGES.festivalStatusSeparator}${MESSAGES.festivalEndsToday}`
-    : MESSAGES.festivalStatusOngoing;
-};
 
 const getSiteEventDates = (siteContext, year) => {
   const { seasonalNormal } = siteContext.site;
@@ -80,7 +69,7 @@ const createEntry = ({ festival, distance }, siteContext, selectedDate) => {
   entry.append(
     createTextElement("h4", festival.title, classOf("__title")),
     createTextElement("p", metaText),
-    createTextElement("p", getNearbyStatusText(festival, selectedDate)),
+    createTextElement("p", formatCompactStatusText(getFestivalState(festival, selectedDate))),
   );
   const overlapLine = createOverlapLine(festival, siteContext, selectedDate.getFullYear());
   if (overlapLine !== null) {

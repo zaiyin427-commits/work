@@ -1,31 +1,17 @@
-import { CALENDAR, FESTIVAL, FESTIVAL_STATUS, MESSAGES } from "./config.js";
-import { parseIsoDate, getDaysBetween, formatMonthDayText } from "./dateUtils.js";
+import { FESTIVAL, FESTIVAL_STATUS, MESSAGES } from "./config.js";
+import { formatMonthDayText } from "./dateUtils.js";
+import {
+  parseFestival,
+  overlapsYear,
+  getFestivalState,
+  isEndingSoon,
+  formatStatusText,
+} from "./festivalStatus.js";
 
 const STATUS_LABELS = {
   [FESTIVAL_STATUS.ongoing]: MESSAGES.festivalStatusOngoing,
   [FESTIVAL_STATUS.upcoming]: MESSAGES.festivalStatusUpcoming,
   [FESTIVAL_STATUS.recentlyEnded]: MESSAGES.festivalStatusRecentlyEnded,
-};
-
-export const parseFestival = (festival) => ({
-  ...festival,
-  start: parseIsoDate(festival.startDate),
-  end: parseIsoDate(festival.endDate),
-});
-
-export const getFestivalStatus = (festival, selectedDate) => {
-  const daysUntilStart = getDaysBetween(selectedDate, festival.start);
-  const daysUntilEnd = getDaysBetween(selectedDate, festival.end);
-  if (daysUntilStart <= 0 && daysUntilEnd >= 0) {
-    return { status: FESTIVAL_STATUS.ongoing, daysUntilStart, daysUntilEnd };
-  }
-  if (daysUntilStart > 0 && daysUntilStart <= FESTIVAL.upcomingWindowDays) {
-    return { status: FESTIVAL_STATUS.upcoming, daysUntilStart, daysUntilEnd };
-  }
-  if (daysUntilEnd < 0 && -daysUntilEnd <= FESTIVAL.recentlyEndedWindowDays) {
-    return { status: FESTIVAL_STATUS.recentlyEnded, daysUntilStart, daysUntilEnd };
-  }
-  return null;
 };
 
 const formatPeriodDate = (festival, date) =>
@@ -47,40 +33,25 @@ export const createTextElement = (tagName, text, className) => {
   return element;
 };
 
-const appendOngoingStatus = (line, daysUntilEnd) => {
-  const endText =
-    daysUntilEnd === 0
-      ? MESSAGES.festivalEndsToday
-      : `${MESSAGES.festivalEndsInPrefix}${daysUntilEnd}${MESSAGES.daySuffix}`;
-  line.append(`${MESSAGES.festivalStatusOngoing}${MESSAGES.festivalStatusSeparator}${endText}`);
-  if (daysUntilEnd > 0 && daysUntilEnd <= FESTIVAL.endingSoonDays) {
+export const createStatusLine = (tagName, state, className) => {
+  const line = createTextElement(tagName, formatStatusText(state), className);
+  if (isEndingSoon(state)) {
     line.append(
       MESSAGES.festivalStatusSeparator,
-      createTextElement("strong", MESSAGES.festivalEndingSoon, `${FESTIVAL.classPrefix}-popup__ending-soon`),
+      createTextElement("strong", MESSAGES.festivalEndingSoon, `${FESTIVAL.classPrefix}-status__ending-soon`),
     );
-  }
-};
-
-const createStatusLine = ({ status, daysUntilStart, daysUntilEnd }) => {
-  const line = createTextElement("p", "", `${FESTIVAL.classPrefix}-popup__status`);
-  if (status === FESTIVAL_STATUS.ongoing) {
-    appendOngoingStatus(line, daysUntilEnd);
-  } else if (status === FESTIVAL_STATUS.upcoming) {
-    line.textContent = `${MESSAGES.festivalDDayPrefix}${daysUntilStart}`;
-  } else {
-    line.textContent = `${-daysUntilEnd}${MESSAGES.festivalEndedAgoSuffix}`;
   }
   return line;
 };
 
-const createPopupContent = (festival, statusInfo) => {
+const createPopupContent = (festival, state) => {
   const content = document.createElement("div");
   content.className = `${FESTIVAL.classPrefix}-popup`;
   content.append(
     createTextElement("h3", festival.title, `${FESTIVAL.classPrefix}-popup__title`),
     createTextElement("p", formatPeriod(festival)),
     createTextElement("p", festival.address),
-    createStatusLine(statusInfo),
+    createStatusLine("p", state, `${FESTIVAL.classPrefix}-popup__status`),
     createTextElement("p", MESSAGES.festivalSourceLine, `${FESTIVAL.classPrefix}-popup__source`),
   );
   return content;
@@ -98,22 +69,31 @@ const createBadge = (festival, status) => {
   return badge;
 };
 
-const getPopupPadding = () => {
-  const toggleBottom = document.getElementById("festival-toggle").getBoundingClientRect().bottom;
-  const sideColumnWidth = document.getElementById("side-column").getBoundingClientRect().width;
-  const compactLayout = window.matchMedia(CALENDAR.compactMediaQuery).matches;
-  const rightPadding = compactLayout ? FESTIVAL.popupGap : sideColumnWidth + 2 * FESTIVAL.popupGap;
-  return {
-    topLeft: L.point(FESTIVAL.popupGap, toggleBottom + FESTIVAL.popupGap),
-    bottomRight: L.point(rightPadding, FESTIVAL.popupGap),
-  };
+const createLazyPoint = (getPoint) => ({
+  get x() {
+    return getPoint().x;
+  },
+  get y() {
+    return getPoint().y;
+  },
+});
+
+const bindFestivalPopup = (layer, festival, state, getPopupPadding) => {
+  layer.bindTooltip(document.createTextNode(festival.title));
+  const popup = L.popup({
+    maxWidth: FESTIVAL.popupMaxWidth,
+    autoPanPaddingTopLeft: createLazyPoint(() => getPopupPadding().topLeft),
+    autoPanPaddingBottomRight: createLazyPoint(() => getPopupPadding().bottomRight),
+  });
+  popup.setContent(createPopupContent(festival, state));
+  layer.bindPopup(popup);
 };
 
-const createFestivalMarker = (festival, statusInfo) => {
-  const modifier = statusInfo.status === FESTIVAL_STATUS.ongoing ? "ongoing" : "nearby";
+const createFestivalMarker = (festival, state, getPopupPadding) => {
+  const modifier = state.nearStatus === FESTIVAL_STATUS.ongoing ? "ongoing" : "nearby";
   const icon = L.divIcon({
     className: `${FESTIVAL.classPrefix} ${FESTIVAL.classPrefix}--${modifier}`,
-    html: createBadge(festival, statusInfo.status),
+    html: createBadge(festival, state.nearStatus),
     iconSize: [FESTIVAL.markerSize, FESTIVAL.markerSize],
     iconAnchor: [FESTIVAL.markerAnchor, FESTIVAL.markerAnchor],
   });
@@ -122,48 +102,139 @@ const createFestivalMarker = (festival, statusInfo) => {
     keyboard: true,
     zIndexOffset: FESTIVAL.zIndexOffset,
   });
-  marker.bindTooltip(document.createTextNode(festival.title));
-  const popup = L.popup();
-  popup.setContent(createPopupContent(festival, statusInfo));
-  marker.on("click", () => {
-    const padding = getPopupPadding();
-    popup.options.autoPanPaddingTopLeft = padding.topLeft;
-    popup.options.autoPanPaddingBottomRight = padding.bottomRight;
-  });
-  marker.bindPopup(popup);
+  bindFestivalPopup(marker, festival, state, getPopupPadding);
   return marker;
 };
 
-export const createFestivalLayer = (map, festivals) => {
-  const parsedFestivals = festivals.map(parseFestival);
-  const layer = L.layerGroup();
+const prefersReducedMotion = () => window.matchMedia(FESTIVAL.reducedMotionQuery).matches;
 
-  const render = (selectedDate) => {
-    layer.clearLayers();
+const makeDotFocusable = (map, dot, festival, getPopupPadding) => {
+  dot.on("add", () => {
+    const element = dot.getElement();
+    element.setAttribute("tabindex", "0");
+    element.setAttribute("role", "button");
+    element.setAttribute("aria-label", festival.title);
+    element.addEventListener("focus", () =>
+      map.panInside(dot.getLatLng(), {
+        animate: !prefersReducedMotion(),
+        paddingTopLeft: getPopupPadding().topLeft,
+        paddingBottomRight: getPopupPadding().bottomRight,
+      }),
+    );
+    element.addEventListener("keydown", (event) => {
+      if (event.key === FESTIVAL.activationKey) {
+        dot.openPopup();
+      }
+    });
+  });
+};
+
+const createFestivalDot = (map, festival, state, getPopupPadding) => {
+  const dot = L.circleMarker([festival.lat, festival.lng], {
+    radius: FESTIVAL.dotRadius,
+    weight: FESTIVAL.dotWeight,
+    color: FESTIVAL.dotBorderColor,
+    fillColor: FESTIVAL.dotColor,
+    fillOpacity: FESTIVAL.dotFillOpacity,
+    className: FESTIVAL.dotClassName,
+  });
+  bindFestivalPopup(dot, festival, state, getPopupPadding);
+  makeDotFocusable(map, dot, festival, getPopupPadding);
+  return dot;
+};
+
+export const createFestivalLayer = (map, festivals, { getPopupPadding }) => {
+  const parsedFestivals = festivals.map(parseFestival);
+  const badgeLayer = L.layerGroup();
+  const dotLayer = L.layerGroup();
+  const badgeMarkers = new Map();
+  let selectedDate = null;
+  let dotsVisible = false;
+  let pendingArrival = null;
+
+  const isDotZoom = () => map.getZoom() >= FESTIVAL.dotMinimumZoom;
+
+  const cancelPendingArrival = () => {
+    if (pendingArrival !== null) {
+      map.off("moveend", pendingArrival);
+      pendingArrival = null;
+    }
+  };
+
+  const renderBadges = () => {
+    badgeLayer.clearLayers();
+    badgeMarkers.clear();
     parsedFestivals.forEach((festival) => {
-      const statusInfo = getFestivalStatus(festival, selectedDate);
-      if (statusInfo !== null) {
-        createFestivalMarker(festival, statusInfo).addTo(layer);
+      const state = getFestivalState(festival, selectedDate);
+      if (state.nearStatus !== null) {
+        const marker = createFestivalMarker(festival, state, getPopupPadding).addTo(badgeLayer);
+        badgeMarkers.set(festival.id, marker);
       }
     });
   };
 
-  const setShown = (shown) => {
-    if (shown) {
-      layer.addTo(map);
-    } else {
-      layer.remove();
+  const renderDots = () => {
+    dotLayer.clearLayers();
+    dotsVisible = isDotZoom();
+    if (!dotsVisible) {
+      return;
     }
+    parsedFestivals.forEach((festival) => {
+      const state = getFestivalState(festival, selectedDate);
+      if (state.nearStatus === null && overlapsYear(festival, selectedDate.getFullYear())) {
+        createFestivalDot(map, festival, state, getPopupPadding).addTo(dotLayer);
+      }
+    });
   };
 
-  return { render, setShown };
-};
+  const render = (date) => {
+    cancelPendingArrival();
+    selectedDate = date;
+    renderBadges();
+    renderDots();
+  };
 
-export const initFestivalToggle = (onChange) => {
-  const container = document.getElementById("festival-toggle");
-  const checkbox = document.getElementById("festival-toggle-input");
-  checkbox.checked = FESTIVAL.showByDefault;
-  checkbox.addEventListener("change", () => onChange(checkbox.checked));
-  container.hidden = false;
-  return checkbox.checked;
+  const hasArrived = (latlng, zoom) =>
+    map.getZoom() === zoom &&
+    map.latLngToContainerPoint(latlng).distanceTo(map.getSize().divideBy(2)) <=
+      FESTIVAL.arrivalTolerancePixels;
+
+  const moveMap = (latlng, zoom, onArrive) => {
+    cancelPendingArrival();
+    if (hasArrived(latlng, zoom)) {
+      onArrive();
+      return;
+    }
+    pendingArrival = () => {
+      cancelPendingArrival();
+      if (!hasArrived(latlng, zoom)) {
+        map.setView(latlng, zoom, { animate: false });
+      }
+      onArrive();
+    };
+    map.on("moveend", pendingArrival);
+    map.setView(latlng, zoom, { animate: !prefersReducedMotion() });
+  };
+
+  const focusFestival = (festivalId) => {
+    const marker = badgeMarkers.get(festivalId);
+    if (marker === undefined) {
+      return;
+    }
+    moveMap(marker.getLatLng(), Math.max(map.getZoom(), FESTIVAL.focusZoom), () => {
+      if (badgeLayer.hasLayer(marker)) {
+        marker.openPopup();
+      }
+    });
+  };
+
+  map.on("zoomend", () => {
+    if (selectedDate !== null && dotsVisible !== isDotZoom()) {
+      renderDots();
+    }
+  });
+  badgeLayer.addTo(map);
+  dotLayer.addTo(map);
+
+  return { render, focusFestival };
 };

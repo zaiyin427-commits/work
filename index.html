@@ -17,10 +17,10 @@
       <p id="empty-month-message" hidden>이 달에는 표시할 곳이 없습니다.</p>
     </div>
   </div>
-  <label id="festival-toggle" hidden>
-    <input type="checkbox" id="festival-toggle-input">
-    <span>축제 함께 보기</span>
-  </label>
+  <section id="festival-list" aria-label="축제 목록" hidden>
+    <button type="button" id="festival-list-toggle" aria-expanded="false" aria-controls="festival-list-body"></button>
+    <div id="festival-list-body"></div>
+  </section>
   <div id="side-column">
     <section id="date-calendar" aria-label="날짜 선택" hidden>
       <button type="button" id="calendar-toggle" aria-expanded="false" aria-controls="calendar-body"></button>

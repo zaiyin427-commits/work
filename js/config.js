@@ -91,6 +91,10 @@ export const MESSAGES = {
   festivalEndedAgoSuffix: "일 전 종료",
   festivalSourceLine: "출처: 한국관광공사",
   festivalStatusEnded: "종료",
+  festivalListHeadingPrefix: "축제 (",
+  festivalListHeadingSuffix: ")",
+  festivalListEmpty: "선택한 날짜 전후에 열리는 축제가 없습니다.",
+  festivalTopicSeparator: ", ",
   kilometerUnit: " km",
   nearbyHeadingPrefix: "근처 축제 (반경 ",
   nearbyHeadingSuffix: ")",
@@ -128,7 +132,6 @@ export const PLAYBACK = {
 export const FESTIVAL_FILE = "data/festivals.json";
 
 export const FESTIVAL = {
-  showByDefault: true,
   upcomingWindowDays: 14,
   recentlyEndedWindowDays: 7,
   endingSoonDays: 2,
@@ -136,6 +139,20 @@ export const FESTIVAL = {
   markerSize: 28,
   markerAnchor: 14,
   popupGap: 12,
+  popupMaxWidth: 240,
+  popupFrameWidth: 47,
+  dotMinimumZoom: 9,
+  focusZoom: 10,
+  arrivalTolerancePixels: 1,
+  dotRadius: 6,
+  dotWeight: 2,
+  dotBorderColor: "#ffffff",
+  dotColor: "#c2410c",
+  dotFillOpacity: 0.75,
+  dotClassName: "festival-dot",
+  activationKey: "Enter",
+  reducedMotionQuery: "(prefers-reduced-motion: reduce)",
+  listClassPrefix: "festival-list",
   classPrefix: "festival-marker",
   nearbyClassPrefix: "nearby-festivals",
   nearbyRadiusKilometers: 30,
@@ -144,6 +161,12 @@ export const FESTIVAL = {
 };
 
 export const EARTH_RADIUS_KILOMETERS = 6371;
+
+export const FESTIVAL_PHASE = {
+  before: "before",
+  ongoing: "ongoing",
+  ended: "ended",
+};
 
 export const FESTIVAL_STATUS = {
   ongoing: "ongoing",

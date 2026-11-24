@@ -7,7 +7,8 @@ import {
 } from "./config.js";
 import { loadTopicData, loadSeasonObservations, loadFestivalData } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
-import { createFestivalLayer, initFestivalToggle } from "./festivalLayer.js";
+import { createFestivalLayer } from "./festivalLayer.js";
+import { initFestivalList } from "./festivalList.js";
 import { initDateCalendar } from "./dateCalendar.js";
 import { initPlayControl } from "./playControl.js";
 import {
@@ -88,6 +89,9 @@ const loadFestivalsOrReport = async () => {
   }
 };
 
+const createTopicTitleMap = (topicDataList) =>
+  new Map(topicDataList.map((topicData) => [topicData.topic.id, topicData.topic.title]));
+
 const start = async () => {
   if (typeof L === "undefined") {
     throw new StartupError(MESSAGES.mapLibraryFailed);
@@ -112,9 +116,17 @@ const start = async () => {
   const map = createMap("map");
   const siteLayer = createSiteLayer(map);
   let selectedDate = getToday();
-  const festivalLayer = festivalResult.festivalData
-    ? createFestivalLayer(map, festivalResult.festivalData.festivals)
+  const festivals = festivalResult.festivalData?.festivals ?? null;
+  let festivalList = null;
+  const festivalLayer = festivals
+    ? createFestivalLayer(map, festivals, {
+        getPopupPadding: () => festivalList.getPopupPadding(),
+      })
     : null;
+  const collapsePanelsIfCompact = () => {
+    dateCalendar.collapseIfCompact();
+    festivalList?.collapseIfCompact();
+  };
   const getSelectedMonth = () => selectedDate.getMonth() + 1;
 
   const render = () => {
@@ -123,14 +135,17 @@ const start = async () => {
       loaded,
       getSelectedMonth(),
       (site, month, topicData) => {
-        dateCalendar.collapseIfCompact();
+        collapsePanelsIfCompact();
         showSiteInfo(site, month, topicData, observations, selectedDate);
       },
     );
     setEmptyMonthMessageVisible(visibleCount === 0);
   };
 
-  const renderFestivals = () => festivalLayer?.render(selectedDate);
+  const renderFestivals = () => {
+    festivalLayer?.render(selectedDate);
+    festivalList?.render(selectedDate);
+  };
 
   initInfoPanel();
   const playControl = initPlayControl(
@@ -149,21 +164,28 @@ const start = async () => {
       renderFestivals();
     },
     onUserInput: playControl.stop,
-    onExpand: closeInfoPanel,
+    onExpand: () => {
+      closeInfoPanel();
+      festivalList?.collapseIfCompact();
+    },
   });
-  map.on("click", dateCalendar.collapseIfCompact);
-  map.on("popupopen", dateCalendar.collapseIfCompact);
+  map.on("click", collapsePanelsIfCompact);
+  map.on("popupopen", collapsePanelsIfCompact);
   render();
   if (festivalLayer) {
-    let festivalsShown = initFestivalToggle((shown) => {
-      festivalsShown = shown;
-      festivalLayer.setShown(shown);
-      refreshSiteInfo(selectedDate);
+    festivalList = initFestivalList(festivals, createTopicTitleMap(loaded), {
+      onSelect: (festivalId) => {
+        playControl.stop();
+        collapsePanelsIfCompact();
+        festivalList.makeRoomForPopup();
+        festivalLayer.focusFestival(festivalId);
+      },
+      onExpand: () => {
+        closeInfoPanel();
+        dateCalendar.collapseIfCompact();
+      },
     });
-    setNearbyFestivalsProvider(() =>
-      festivalsShown ? festivalResult.festivalData.festivals : null,
-    );
-    festivalLayer.setShown(festivalsShown);
+    setNearbyFestivalsProvider(() => festivals);
     renderFestivals();
   }
 };
