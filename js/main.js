@@ -3,15 +3,11 @@ import {
   getToday,
   MESSAGES,
   SEASON_OBSERVATIONS_FILE,
-  REAL_TRACKS,
 } from "./config.js";
-import { loadTopicData, loadSeasonObservations, loadRealTrack } from "./dataLoader.js";
+import { loadTopicData, loadSeasonObservations } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
 import { initDateCalendar } from "./dateCalendar.js";
 import { initPlayControl } from "./playControl.js";
-import { createMigrationAnimation } from "./migrationAnimation.js";
-import { createRealTrack } from "./realTrack.js";
-import { initMapLegend } from "./mapLegend.js";
 import {
   initInfoPanel,
   showSiteInfo,
@@ -73,8 +69,6 @@ const loadAllSettled = async (entries, loadEntry) => {
 
 const loadAllTopics = () => loadAllSettled(TOPICS, loadTopicWithIdCheck);
 
-const loadAllRealTracks = () => loadAllSettled(REAL_TRACKS, loadRealTrack);
-
 const loadObservationsOrReport = async () => {
   try {
     return { observations: await loadSeasonObservations(SEASON_OBSERVATIONS_FILE), failure: null };
@@ -87,20 +81,14 @@ const start = async () => {
   if (typeof L === "undefined") {
     throw new StartupError(MESSAGES.mapLibraryFailed);
   }
-  const [
-    { loaded, failures: topicFailures },
-    observationsResult,
-    { loaded: tracks, failures: trackFailures },
-  ] = await Promise.all([
+  const [{ loaded, failures: topicFailures }, observationsResult] = await Promise.all([
     loadAllTopics(),
     loadObservationsOrReport(),
-    loadAllRealTracks(),
   ]);
   const { observations } = observationsResult;
   const failures = [
     ...topicFailures,
     ...(observationsResult.failure ? [observationsResult.failure] : []),
-    ...trackFailures,
   ];
   if (failures.length > 0) {
     reportLoadFailures(failures);
@@ -110,19 +98,11 @@ const start = async () => {
   }
   const map = createMap("map");
   const siteLayer = createSiteLayer(map);
-  const migrationAnimation = createMigrationAnimation(map);
-  const realTrack = createRealTrack(map, tracks);
-  const mapLegend = initMapLegend(tracks, loaded, realTrack.moveTo);
   let selectedDate = getToday();
   const getSelectedMonth = () => selectedDate.getMonth() + 1;
 
-  const showDayPosition = () => mapLegend.setGoToTarget(realTrack.showDay(selectedDate));
-
   const render = () => {
     closeInfoPanel();
-    migrationAnimation.clear();
-    realTrack.draw(loaded, getSelectedMonth());
-    showDayPosition();
     const visibleCount = siteLayer.render(
       loaded,
       getSelectedMonth(),
@@ -145,10 +125,7 @@ const start = async () => {
       selectedDate = date;
       if (monthChanged) {
         render();
-        migrationAnimation.play(loaded, getSelectedMonth());
-        realTrack.animate();
       } else {
-        showDayPosition();
         refreshSiteInfo(selectedDate);
       }
     },

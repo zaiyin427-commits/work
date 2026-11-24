@@ -1,11 +1,4 @@
-import {
-  MONTH_MIN,
-  MONTH_MAX,
-  ISO_DATE_PATTERN,
-  LATITUDE_LIMIT,
-  LONGITUDE_LIMIT,
-} from "./config.js";
-import { getDaysInMonth } from "./dateUtils.js";
+import { MONTH_MIN, MONTH_MAX } from "./config.js";
 import { parseMonthDay } from "./seasonStatus.js";
 
 const isPlainObject = (value) =>
@@ -31,21 +24,6 @@ const validateSpecies = (species, speciesId) => {
   }
   if (species.icon !== undefined && !isNonEmptyString(species.icon)) {
     throw new Error(`종 "${speciesId}"의 icon이 비어 있지 않은 문자열이 아닙니다.`);
-  }
-  if (species.breedingArea !== undefined) {
-    validateBreedingArea(species.breedingArea, speciesId);
-  }
-};
-
-const validateBreedingArea = (breedingArea, speciesId) => {
-  if (!isPlainObject(breedingArea)) {
-    throw new Error(`종 "${speciesId}"의 breedingArea가 객체가 아닙니다.`);
-  }
-  if (!isNonEmptyString(breedingArea.name)) {
-    throw new Error(`종 "${speciesId}"의 breedingArea에 비어 있지 않은 문자열 name이 없습니다.`);
-  }
-  if (!Number.isFinite(breedingArea.lat) || !Number.isFinite(breedingArea.lng)) {
-    throw new Error(`종 "${speciesId}"의 breedingArea lat/lng가 숫자가 아닙니다.`);
   }
 };
 
@@ -183,75 +161,4 @@ export const loadSeasonObservations = async (filePath) => {
   }
   const data = await response.json();
   return validateSeasonObservations(data);
-};
-
-const isValidIsoDate = (text) => {
-  const match = typeof text === "string" ? ISO_DATE_PATTERN.exec(text) : null;
-  if (match === null) {
-    return false;
-  }
-  const [year, month, day] = match.slice(1).map(Number);
-  return isValidMonth(month) && day >= 1 && day <= getDaysInMonth(year, month - 1);
-};
-
-const isWithinLimit = (value, limit) =>
-  Number.isFinite(value) && Math.abs(value) <= limit;
-
-const REAL_TRACK_STRING_FIELDS = ["speciesId", "speciesName", "individualName", "season"];
-
-const REAL_TRACK_SOURCE_FIELDS = ["name", "citation", "doi", "license", "licenseUrl"];
-
-const validateRealTrackPoint = (point, index, previousPoint) => {
-  const label = `points[${index}]`;
-  if (!Array.isArray(point) || point.length !== 3) {
-    throw new Error(`${label}가 [날짜, 위도, 경도] 형식이 아닙니다.`);
-  }
-  const [date, lat, lng] = point;
-  if (!isValidIsoDate(date)) {
-    throw new Error(`${label}의 날짜 "${date}"가 유효한 YYYY-MM-DD가 아닙니다.`);
-  }
-  if (!isWithinLimit(lat, LATITUDE_LIMIT) || !isWithinLimit(lng, LONGITUDE_LIMIT)) {
-    throw new Error(`${label}의 위도/경도가 유효한 숫자 범위를 벗어났습니다.`);
-  }
-  if (previousPoint !== undefined && date <= previousPoint[0]) {
-    throw new Error(`${label}의 날짜 "${date}"가 이전 점보다 늦지 않아 시간순이 아니거나 중복입니다.`);
-  }
-};
-
-export const validateRealTrack = (data) => {
-  if (!isPlainObject(data)) {
-    throw new Error("실제 추적 데이터가 객체가 아닙니다.");
-  }
-  REAL_TRACK_STRING_FIELDS.forEach((field) => {
-    if (!isNonEmptyString(data[field])) {
-      throw new Error(`실제 추적 데이터에 비어 있지 않은 문자열 ${field}이(가) 없습니다.`);
-    }
-  });
-  if (!Number.isFinite(data.precisionDegrees) || data.precisionDegrees <= 0) {
-    throw new Error("실제 추적 데이터의 precisionDegrees가 0보다 큰 숫자가 아닙니다.");
-  }
-  if (!isPlainObject(data.source)) {
-    throw new Error("실제 추적 데이터에 source 객체가 없습니다.");
-  }
-  REAL_TRACK_SOURCE_FIELDS.forEach((field) => {
-    if (!isNonEmptyString(data.source[field])) {
-      throw new Error(`실제 추적 데이터의 source에 비어 있지 않은 문자열 ${field}이(가) 없습니다.`);
-    }
-  });
-  if (!Array.isArray(data.points)) {
-    throw new Error("실제 추적 데이터에 points 배열이 없습니다.");
-  }
-  data.points.forEach((point, index) =>
-    validateRealTrackPoint(point, index, data.points[index - 1]),
-  );
-  return data;
-};
-
-export const loadRealTrack = async (trackConfig) => {
-  const response = await fetch(trackConfig.dataFile);
-  if (!response.ok) {
-    throw new Error(`${trackConfig.dataFile} 요청 실패 (HTTP ${response.status})`);
-  }
-  const data = await response.json();
-  return { topicId: trackConfig.topicId, data: validateRealTrack(data) };
 };

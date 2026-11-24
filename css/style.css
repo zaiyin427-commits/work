@@ -18,10 +18,6 @@
   --calendar-nav-size: 40px;
   --calendar-button-height: 36px;
   --calendar-toggle-height: 40px;
-  --legend-max-width: 360px;
-  --legend-swatch-width: 28px;
-  --legend-stay-swatch-width: 22px;
-  --legend-stay-swatch-height: 12px;
 }
 
 * {
@@ -287,74 +283,6 @@ body {
   gap: 8px;
 }
 
-#map-legend {
-  max-width: min(var(--legend-max-width), calc(100vw - var(--panel-width) - 3 * var(--gap)));
-  padding: 8px 12px;
-  background: var(--surface-color);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  font-size: 0.78rem;
-  line-height: 1.4;
-  pointer-events: none;
-}
-
-#legend-rows {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-#legend-rows li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.legend-swatch {
-  flex: none;
-  width: var(--legend-swatch-width);
-  border-top: 3px solid var(--legend-swatch-color, var(--text-color));
-}
-
-.legend-swatch--stay {
-  width: var(--legend-stay-swatch-width);
-  height: var(--legend-stay-swatch-height);
-  margin-inline: calc((var(--legend-swatch-width) - var(--legend-stay-swatch-width)) / 2);
-  box-sizing: border-box;
-  border: 2px solid var(--legend-swatch-color, var(--text-color));
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--legend-swatch-color, var(--text-color)) 25%, transparent);
-}
-
-.legend-swatch--estimated {
-  border-top-style: dashed;
-  border-top-color: var(--muted-color);
-}
-
-#legend-go-to-position {
-  flex: none;
-  padding: 0 8px;
-  border: 1px solid var(--accent-color);
-  border-radius: 999px;
-  background: var(--surface-color);
-  color: var(--accent-color);
-  font: inherit;
-  white-space: nowrap;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-#legend-source {
-  margin: 0;
-  color: var(--muted-color);
-}
-
-#legend-source a {
-  color: var(--accent-color);
-  pointer-events: auto;
-}
-
 #empty-month-message,
 #error-message {
   margin: 0;
@@ -372,8 +300,6 @@ body {
   border: 1px solid var(--error-color);
 }
 
-#map-legend a:focus-visible,
-#legend-go-to-position:focus-visible,
 #date-calendar button:focus-visible,
 #info-panel-close:focus-visible {
   outline: 3px solid var(--accent-color);
@@ -391,15 +317,14 @@ body {
     z-index: 1100;
   }
 
-  body:has(#date-calendar.is-expanded) .leaflet-control-zoom,
-  body:has(#date-calendar.is-expanded) #map-legend {
+  body:has(#date-calendar.is-expanded) .leaflet-control-zoom {
     display: none;
   }
 }
 
 @media (max-width: 400px) {
   :root {
-    --attribution-height: 52px;
+    --attribution-height: 36px;
   }
 }
 
@@ -457,12 +382,7 @@ body {
     z-index: 1000;
   }
 
-  #map-legend {
-    max-width: 100%;
-  }
-
-  body:has(#info-panel:not([hidden])) .leaflet-control-zoom,
-  body:has(#info-panel:not([hidden])) #map-legend {
+  body:has(#info-panel:not([hidden])) .leaflet-control-zoom {
     display: none;
   }
 }
@@ -495,20 +415,4 @@ body {
   .species-marker__icon {
     transition: none;
   }
-}
-
-.real-track-day-label {
-  padding: 2px 6px;
-  border: 0;
-  border-radius: 4px;
-  background: var(--surface-color);
-  color: var(--text-color);
-  box-shadow: var(--shadow);
-  font-size: 0.75rem;
-  line-height: 1.3;
-  white-space: nowrap;
-}
-
-.real-track-day-label::before {
-  display: none;
 }
