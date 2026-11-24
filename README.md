@@ -20,6 +20,7 @@ js/main.js                  초기화와 모듈 연결
 js/dataLoader.js            JSON 데이터 로드
 js/mapView.js               Leaflet 지도와 마커
 js/speciesIcons.js          종별 지도 아이콘
+js/festivalLayer.js         축제 마커 레이어와 "축제 함께 보기" 토글
 js/dateCalendar.js          날짜 달력(선택 날짜, 이전/다음 달, 오늘)
 js/dateUtils.js             날짜 계산 도우미
 js/playControl.js           날짜 자동 재생 버튼(달력 안)
@@ -34,7 +35,7 @@ data/azalea.json            진달래 명소 데이터
 data/cherry-blossom.json    벚꽃 명소 데이터
 data/autumn-foliage.json    단풍 명소 데이터
 data/season-observations.json  기상청 계절관측값(스크립트가 생성)
-data/festivals.json         벚꽃·단풍 등 축제 데이터(스크립트가 생성, 아직 지도에 표시하지 않음)
+data/festivals.json         벚꽃·단풍 등 축제 데이터(스크립트가 생성, 지도에 표시)
 README.md                   이 문서
 ```
 
@@ -116,6 +117,16 @@ TOUR_API_KEY=... node scripts/buildFestivals.mjs --write   # data/festivals.json
 | `koreaBounds` | 이 위경도 범위 밖의 좌표는 제외 |
 | `topicKeywords` | 소재 ID별 제목 키워드(하나라도 들어 있으면 그 소재의 축제) |
 | `source` | 결과 파일에 기록하는 출처 이름과 URL |
+
+### 지도 표시
+
+지도 왼쪽 위의 "축제 함께 보기" 체크박스(기본 켜짐, `FESTIVAL.showByDefault`)로 축제 마커를 켜고 끈다. 선택한 날짜와 축제 날짜를 연도까지 그대로 비교하므로 다른 해의 축제는 나타나지 않는다(다른 해로 옮겨 보여주지 않는다). 날짜를 바꾸거나 재생할 때마다 갱신된다.
+
+- 진행 중(시작일 ≤ 선택일 ≤ 종료일): 진한 마커. 종료 `FESTIVAL.endingSoonDays`일 이내이면 팝업에 "종료 임박"을 강조하고, 마지막 날에는 "오늘 종료"만 표시한다.
+- 예정(시작일까지 `FESTIVAL.upcomingWindowDays`일 이내): 옅은 마커, 팝업에 D-N.
+- 최근 종료(종료 후 `FESTIVAL.recentlyEndedWindowDays`일 이내): 옅은 마커, 팝업에 N일 전 종료.
+- 그 외는 표시하지 않는다. 기준 일수는 `js/config.js`의 `FESTIVAL`에서 바꾼다.
+- 팝업에는 기간, 주소와 "출처: 한국관광공사"를 표시한다. `data/festivals.json`을 불러오지 못하면 오류 메시지에 파일이 나오고 토글은 숨겨지며 나머지 지도는 그대로 동작한다.
 
 축제 데이터 출처: 한국관광공사 TourAPI(https://api.visitkorea.or.kr, 공공데이터포털 국문 관광정보 서비스).
 

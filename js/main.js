@@ -3,9 +3,11 @@ import {
   getToday,
   MESSAGES,
   SEASON_OBSERVATIONS_FILE,
+  FESTIVAL_FILE,
 } from "./config.js";
-import { loadTopicData, loadSeasonObservations } from "./dataLoader.js";
+import { loadTopicData, loadSeasonObservations, loadFestivalData } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
+import { createFestivalLayer, initFestivalToggle } from "./festivalLayer.js";
 import { initDateCalendar } from "./dateCalendar.js";
 import { initPlayControl } from "./playControl.js";
 import {
@@ -77,18 +79,28 @@ const loadObservationsOrReport = async () => {
   }
 };
 
+const loadFestivalsOrReport = async () => {
+  try {
+    return { festivalData: await loadFestivalData(FESTIVAL_FILE), failure: null };
+  } catch (error) {
+    return { festivalData: null, failure: { file: FESTIVAL_FILE, error } };
+  }
+};
+
 const start = async () => {
   if (typeof L === "undefined") {
     throw new StartupError(MESSAGES.mapLibraryFailed);
   }
-  const [{ loaded, failures: topicFailures }, observationsResult] = await Promise.all([
+  const [{ loaded, failures: topicFailures }, observationsResult, festivalResult] = await Promise.all([
     loadAllTopics(),
     loadObservationsOrReport(),
+    loadFestivalsOrReport(),
   ]);
   const { observations } = observationsResult;
   const failures = [
     ...topicFailures,
     ...(observationsResult.failure ? [observationsResult.failure] : []),
+    ...(festivalResult.failure ? [festivalResult.failure] : []),
   ];
   if (failures.length > 0) {
     reportLoadFailures(failures);
@@ -99,6 +111,9 @@ const start = async () => {
   const map = createMap("map");
   const siteLayer = createSiteLayer(map);
   let selectedDate = getToday();
+  const festivalLayer = festivalResult.festivalData
+    ? createFestivalLayer(map, festivalResult.festivalData.festivals)
+    : null;
   const getSelectedMonth = () => selectedDate.getMonth() + 1;
 
   const render = () => {
@@ -114,6 +129,8 @@ const start = async () => {
     setEmptyMonthMessageVisible(visibleCount === 0);
   };
 
+  const renderFestivals = () => festivalLayer?.render(selectedDate);
+
   initInfoPanel();
   const playControl = initPlayControl(
     () => selectedDate,
@@ -128,12 +145,18 @@ const start = async () => {
       } else {
         refreshSiteInfo(selectedDate);
       }
+      renderFestivals();
     },
     onUserInput: playControl.stop,
     onExpand: closeInfoPanel,
   });
   map.on("click", dateCalendar.collapseIfCompact);
+  map.on("popupopen", dateCalendar.collapseIfCompact);
   render();
+  if (festivalLayer) {
+    festivalLayer.setShown(initFestivalToggle(festivalLayer.setShown));
+    renderFestivals();
+  }
 };
 
 start().catch(showError);

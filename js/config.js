@@ -77,6 +77,19 @@ export const MESSAGES = {
   seasonProxyNote: "대체 관측소",
   seasonEventSeparator: " · ",
   seasonBeforeSuffix: " 전",
+  festivalMarkerGlyph: "축",
+  festivalStatusOngoing: "진행 중",
+  festivalStatusUpcoming: "예정",
+  festivalStatusRecentlyEnded: "최근 종료",
+  festivalLabelSeparator: " – ",
+  festivalStatusSeparator: " · ",
+  festivalPeriodSeparator: " ~ ",
+  festivalEndsInPrefix: "종료까지 ",
+  festivalEndsToday: "오늘 종료",
+  festivalEndingSoon: "종료 임박",
+  festivalDDayPrefix: "D-",
+  festivalEndedAgoSuffix: "일 전 종료",
+  festivalSourceLine: "출처: 한국관광공사",
 };
 
 export const SEASON_OBSERVATIONS_FILE = "data/season-observations.json";
@@ -98,4 +111,24 @@ export const SEASON_STATUS_LABELS = {
 
 export const PLAYBACK = {
   intervalMilliseconds: 3000,
+};
+
+export const FESTIVAL_FILE = "data/festivals.json";
+
+export const FESTIVAL = {
+  showByDefault: true,
+  upcomingWindowDays: 14,
+  recentlyEndedWindowDays: 7,
+  endingSoonDays: 2,
+  zIndexOffset: 1000,
+  markerSize: 28,
+  markerAnchor: 14,
+  popupGap: 12,
+  classPrefix: "festival-marker",
+};
+
+export const FESTIVAL_STATUS = {
+  ongoing: "ongoing",
+  upcoming: "upcoming",
+  recentlyEnded: "recentlyEnded",
 };

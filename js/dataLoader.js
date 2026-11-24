@@ -1,5 +1,6 @@
 import { MONTH_MIN, MONTH_MAX } from "./config.js";
 import { parseMonthDay } from "./seasonStatus.js";
+import { parseIsoDate } from "./dateUtils.js";
 
 const isPlainObject = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -161,4 +162,51 @@ export const loadSeasonObservations = async (filePath) => {
   }
   const data = await response.json();
   return validateSeasonObservations(data);
+};
+
+const validateFestival = (festival) => {
+  if (!isPlainObject(festival) || !isNonEmptyString(festival.id)) {
+    throw new Error("festivals 항목에 비어 있지 않은 문자열 id가 없습니다.");
+  }
+  const label = `축제 "${festival.id}"`;
+  if (!isNonEmptyString(festival.title)) {
+    throw new Error(`${label}에 비어 있지 않은 문자열 title이 없습니다.`);
+  }
+  const startDate = parseIsoDate(festival.startDate);
+  const endDate = parseIsoDate(festival.endDate);
+  if (startDate === null || endDate === null) {
+    throw new Error(`${label}의 startDate/endDate가 유효한 YYYY-MM-DD가 아닙니다.`);
+  }
+  if (endDate < startDate) {
+    throw new Error(`${label}의 endDate가 startDate보다 앞섭니다.`);
+  }
+  if (!Number.isFinite(festival.lat) || !Number.isFinite(festival.lng)) {
+    throw new Error(`${label}의 lat/lng가 숫자가 아닙니다.`);
+  }
+  if (typeof festival.address !== "string") {
+    throw new Error(`${label}의 address가 문자열이 아닙니다.`);
+  }
+  if (!Array.isArray(festival.topicIds)) {
+    throw new Error(`${label}에 topicIds 배열이 없습니다.`);
+  }
+};
+
+export const validateFestivalData = (data) => {
+  if (!isPlainObject(data)) {
+    throw new Error("축제 데이터가 객체가 아닙니다.");
+  }
+  if (!Array.isArray(data.festivals)) {
+    throw new Error("축제 데이터에 festivals 배열이 없습니다.");
+  }
+  data.festivals.forEach(validateFestival);
+  return data;
+};
+
+export const loadFestivalData = async (filePath) => {
+  const response = await fetch(filePath);
+  if (!response.ok) {
+    throw new Error(`${filePath} 요청 실패 (HTTP ${response.status})`);
+  }
+  const data = await response.json();
+  return validateFestivalData(data);
 };
