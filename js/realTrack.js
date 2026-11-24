@@ -10,6 +10,11 @@ import { ensurePane, prefersReducedMotion } from "./migrationAnimation.js";
 
 const getPointMonth = (point) => Number(ISO_DATE_PATTERN.exec(point[0])[2]);
 
+const getPointDateParts = (point) => {
+  const [, year, month, day] = ISO_DATE_PATTERN.exec(point[0]);
+  return { year: Number(year), month: Number(month), day: Number(day) };
+};
+
 const toLatLng = (point) => [point[1], point[2]];
 
 const getMonthSegment = (track, month) => {
@@ -199,22 +204,84 @@ const createStayArea = (stayArea, color) =>
     interactive: false,
   });
 
-const createDot = (startPoint, color) =>
-  L.circleMarker(startPoint, {
-    radius: REAL_TRACK.dotRadius,
+const createCircleMarker = (latLng, color, { radius, strokeWeight, className }) =>
+  L.circleMarker(latLng, {
+    radius,
     stroke: true,
     color: REAL_TRACK.dotStrokeColor,
-    weight: REAL_TRACK.dotStrokeWeight,
+    weight: strokeWeight,
     fillColor: color,
     fillOpacity: REAL_TRACK.dotFillOpacity,
-    className: REAL_TRACK.dotClassName,
+    className,
     pane: MIGRATION_ANIMATION.paneName,
     interactive: false,
   });
 
+const createDot = (startPoint, color) =>
+  createCircleMarker(startPoint, color, {
+    radius: REAL_TRACK.dotRadius,
+    strokeWeight: REAL_TRACK.dotStrokeWeight,
+    className: REAL_TRACK.dotClassName,
+  });
+
+const findDayRecord = (track, month, day) => {
+  const monthPoints = track.points.filter((point) => getPointMonth(point) === month);
+  const exactPoint = monthPoints.find((point) => getPointDateParts(point).day === day);
+  if (exactPoint !== undefined) {
+    return { point: exactPoint, hasRecord: true };
+  }
+  const earlierPoints = monthPoints.filter((point) => getPointDateParts(point).day < day);
+  const nearestPoint = earlierPoints.at(-1) ?? monthPoints[0];
+  return nearestPoint === undefined ? null : { point: nearestPoint, hasRecord: false };
+};
+
+const formatMonthDay = (month, day) =>
+  `${month}${MESSAGES.monthSuffix} ${day}${MESSAGES.daySuffix}`;
+
+const formatDayLabel = (track, selectedMonth, selectedDay, { point, hasRecord }) => {
+  const { year, month, day } = getPointDateParts(point);
+  const separator = MESSAGES.trackDayLabelSeparator;
+  const positionSuffix = MESSAGES.trackDayPositionSuffix;
+  if (hasRecord) {
+    const date = `${year}${MESSAGES.yearSuffix} ${formatMonthDay(month, day)}`;
+    return `${track.individualName}${separator}${date}${positionSuffix}`;
+  }
+  const selected = formatMonthDay(selectedMonth, selectedDay);
+  const fallback = `${MESSAGES.trackDayFallbackOpen}${formatMonthDay(month, day)}${positionSuffix}${MESSAGES.trackDayFallbackClose}`;
+  return `${track.individualName}${separator}${selected}${MESSAGES.trackDayNoRecordSuffix}${fallback}`;
+};
+
+const createDayLabel = (text) => {
+  const element = document.createElement("span");
+  element.textContent = text;
+  return element;
+};
+
+const createDayPosition = (track, color, selectedMonth, selectedDay) => {
+  const record = findDayRecord(track, selectedMonth, selectedDay);
+  if (record === null) {
+    return null;
+  }
+  const marker = createCircleMarker(toLatLng(record.point), color, {
+    radius: REAL_TRACK.dayPositionRadius,
+    strokeWeight: REAL_TRACK.dayPositionStrokeWeight,
+    className: REAL_TRACK.dayPositionClassName,
+  });
+  return marker.bindTooltip(
+    createDayLabel(formatDayLabel(track, selectedMonth, selectedDay, record)),
+    {
+      permanent: true,
+      direction: "top",
+      offset: [0, -REAL_TRACK.dayPositionRadius],
+      className: REAL_TRACK.dayLabelClassName,
+    },
+  );
+};
+
 export const createRealTrack = (map, tracks) => {
   ensurePane(map);
   const layer = L.layerGroup().addTo(map);
+  const dayPositionLayer = L.layerGroup().addTo(map);
   let segments = [];
   let frameId = null;
 
@@ -223,12 +290,14 @@ export const createRealTrack = (map, tracks) => {
     frameId = null;
     segments = [];
     layer.clearLayers();
+    dayPositionLayer.clearLayers();
   };
 
   const collectSegments = (loadedTopics, month) =>
     tracks
       .filter(({ topicId }) => loadedTopics.some((topicData) => topicData.topic.id === topicId))
       .map(({ topicId, data }) => ({
+        track: data,
         ...getMonthShapes(data, month),
         color: getTrackColor(data, loadedTopics, topicId),
       }));
@@ -240,6 +309,16 @@ export const createRealTrack = (map, tracks) => {
       stayAreas.forEach((stayArea) => createStayArea(stayArea, color).addTo(layer));
       if (path !== null) {
         createPath(path, color).addTo(layer);
+      }
+    });
+  };
+
+  const showDay = (selectedDate) => {
+    dayPositionLayer.clearLayers();
+    segments.forEach(({ track, color }) => {
+      const marker = createDayPosition(track, color, selectedDate.getMonth() + 1, selectedDate.getDate());
+      if (marker !== null) {
+        marker.addTo(dayPositionLayer);
       }
     });
   };
@@ -267,5 +346,5 @@ export const createRealTrack = (map, tracks) => {
     frameId = requestAnimationFrame(step);
   };
 
-  return { draw, animate };
+  return { draw, showDay, animate };
 };

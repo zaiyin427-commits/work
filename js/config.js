@@ -95,6 +95,11 @@ export const MESSAGES = {
   legendSourceSeparator: "·",
   legendModificationPrefix: "일별 중앙값·",
   legendModificationSuffix: "° 반올림으로 가공",
+  trackDayLabelSeparator: " · ",
+  trackDayPositionSuffix: " 위치",
+  trackDayNoRecordSuffix: " 기록 없음",
+  trackDayFallbackOpen: " (",
+  trackDayFallbackClose: ")",
   legendMultipleTracks: "실제 추적이 둘 이상 불러와졌지만 범례에는 첫 번째만 표시합니다.",
 };
 
@@ -156,6 +161,10 @@ export const REAL_TRACK = {
   dotFillOpacity: 1,
   dotStrokeColor: "#ffffff",
   dotStrokeWeight: 2,
+  dayPositionClassName: "real-track-day-position",
+  dayPositionRadius: 9,
+  dayPositionStrokeWeight: 3,
+  dayLabelClassName: "real-track-day-label",
   stayAreaClassName: "real-track-stay-area",
   stayAreaMaxSpreadKilometers: 30,
   stayAreaMinimumRecords: 3,

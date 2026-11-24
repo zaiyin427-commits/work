@@ -120,6 +120,7 @@ const start = async () => {
     closeInfoPanel();
     migrationAnimation.clear();
     realTrack.draw(loaded, getSelectedMonth());
+    realTrack.showDay(selectedDate);
     const visibleCount = siteLayer.render(
       loaded,
       getSelectedMonth(),
@@ -145,6 +146,7 @@ const start = async () => {
         migrationAnimation.play(loaded, getSelectedMonth());
         realTrack.animate();
       } else {
+        realTrack.showDay(selectedDate);
         refreshSiteInfo(selectedDate);
       }
     },
