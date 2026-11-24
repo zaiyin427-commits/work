@@ -154,7 +154,11 @@ export const initDateCalendar = (
   };
 
   const applyLayoutDefault = () => {
-    card.classList.toggle("is-expanded", !compactLayout.matches);
+    if (compactLayout.matches) {
+      collapse();
+      return;
+    }
+    card.classList.add("is-expanded");
     showToggleLabel();
   };
 
