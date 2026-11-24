@@ -90,6 +90,18 @@ export const MESSAGES = {
   festivalDDayPrefix: "D-",
   festivalEndedAgoSuffix: "일 전 종료",
   festivalSourceLine: "출처: 한국관광공사",
+  festivalStatusEnded: "종료",
+  kilometerUnit: " km",
+  nearbyHeadingPrefix: "근처 축제 (반경 ",
+  nearbyHeadingSuffix: ")",
+  nearbyEmptyPrefix: "반경 ",
+  nearbyEmptyMiddle: " 안에 ",
+  nearbyEmptySuffix: " 관련 축제가 없습니다.",
+  nearbyDistancePrefix: "약 ",
+  nearbyDistanceUnderMinimumSuffix: " 미만",
+  nearbyExpectedDate: "예상일",
+  nearbyObservedDate: "관측일",
+  nearbyOverlapSuffix: "이 축제 기간과 겹침",
 };
 
 export const SEASON_OBSERVATIONS_FILE = "data/season-observations.json";
@@ -125,7 +137,13 @@ export const FESTIVAL = {
   markerAnchor: 14,
   popupGap: 12,
   classPrefix: "festival-marker",
+  nearbyClassPrefix: "nearby-festivals",
+  nearbyRadiusKilometers: 30,
+  nearbyMaxCount: 5,
+  nearbyMinimumDistanceKilometers: 1,
 };
+
+export const EARTH_RADIUS_KILOMETERS = 6371;
 
 export const FESTIVAL_STATUS = {
   ongoing: "ongoing",

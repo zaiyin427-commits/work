@@ -7,7 +7,7 @@ const STATUS_LABELS = {
   [FESTIVAL_STATUS.recentlyEnded]: MESSAGES.festivalStatusRecentlyEnded,
 };
 
-const parseFestival = (festival) => ({
+export const parseFestival = (festival) => ({
   ...festival,
   start: parseIsoDate(festival.startDate),
   end: parseIsoDate(festival.endDate),
@@ -33,12 +33,12 @@ const formatPeriodDate = (festival, date) =>
     ? formatMonthDayText(date)
     : `${date.getFullYear()}${MESSAGES.yearSuffix} ${formatMonthDayText(date)}`;
 
-const formatPeriod = (festival) =>
+export const formatPeriod = (festival) =>
   festival.start.getTime() === festival.end.getTime()
     ? formatPeriodDate(festival, festival.start)
     : `${formatPeriodDate(festival, festival.start)}${MESSAGES.festivalPeriodSeparator}${formatPeriodDate(festival, festival.end)}`;
 
-const createTextElement = (tagName, text, className) => {
+export const createTextElement = (tagName, text, className) => {
   const element = document.createElement(tagName);
   element.textContent = text;
   if (className !== undefined) {

@@ -21,6 +21,8 @@ js/dataLoader.js            JSON 데이터 로드
 js/mapView.js               Leaflet 지도와 마커
 js/speciesIcons.js          종별 지도 아이콘
 js/festivalLayer.js         축제 마커 레이어와 "축제 함께 보기" 토글
+js/nearbyFestivals.js       명소 패널의 "근처 축제" 목록
+js/geoUtils.js              두 지점 사이 거리 계산
 js/dateCalendar.js          날짜 달력(선택 날짜, 이전/다음 달, 오늘)
 js/dateUtils.js             날짜 계산 도우미
 js/playControl.js           날짜 자동 재생 버튼(달력 안)
@@ -126,6 +128,9 @@ TOUR_API_KEY=... node scripts/buildFestivals.mjs --write   # data/festivals.json
 - 예정(시작일까지 `FESTIVAL.upcomingWindowDays`일 이내): 옅은 마커, 팝업에 D-N.
 - 최근 종료(종료 후 `FESTIVAL.recentlyEndedWindowDays`일 이내): 옅은 마커, 팝업에 N일 전 종료.
 - 그 외는 표시하지 않는다. 기준 일수는 `js/config.js`의 `FESTIVAL`에서 바꾼다.
+- 명소를 눌러 열리는 패널 맨 아래에 "근처 축제" 목록이 나온다. 같은 소재(주제)의 축제 중 반경 `FESTIVAL.nearbyRadiusKilometers`km 안의 것을 가까운 순으로 최대 `FESTIVAL.nearbyMaxCount`개 보여 주며, 선택한 날짜와 같은 해의 축제만 대상이다(없으면 안내 문구).
+- 각 축제에는 기간, 거리, 선택일 기준 상태(D-N·진행 중·종료)를 표시한다. 명소의 개화·단풍 날짜(선택한 해의 관측값이 있으면 관측일, 없으면 평년값 기준 예상일)가 축제 기간 안에 들면 "겹침" 줄을 강조해 보여 준다.
+- "축제 함께 보기" 토글을 끄면 이 목록도 사라지고 켜면 다시 나타난다. 축제 데이터를 불러오지 못하면 목록은 나오지 않는다.
 - 팝업에는 기간, 주소와 "출처: 한국관광공사"를 표시한다. `data/festivals.json`을 불러오지 못하면 오류 메시지에 파일이 나오고 토글은 숨겨지며 나머지 지도는 그대로 동작한다.
 
 축제 데이터 출처: 한국관광공사 TourAPI(https://api.visitkorea.or.kr, 공공데이터포털 국문 관광정보 서비스).

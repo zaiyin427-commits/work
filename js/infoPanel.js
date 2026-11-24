@@ -7,6 +7,7 @@ import {
 } from "./seasonStatus.js";
 import { getObservationsInMonth } from "./mapView.js";
 import { formatMonthDayText } from "./dateUtils.js";
+import { createNearbyFestivalsSection } from "./nearbyFestivals.js";
 
 const panel = () => document.getElementById("info-panel");
 
@@ -45,6 +46,9 @@ const formatEvents = (events) =>
 const getObservedEvents = (site, topicData, observations) =>
   observations?.sites[`${topicData.topic.id}/${site.id}`] ?? null;
 
+const getObservedEventsForYear = (site, topicData, observations, year) =>
+  observations?.year === year ? (getObservedEvents(site, topicData, observations) ?? []) : [];
+
 const createSeasonLine = (label, text) => createParagraph(`${label}: ${text}`);
 
 const getStatusLabel = (status, events) =>
@@ -66,12 +70,10 @@ const getBasisText = (year, observedCount, normalCount) => {
 const formatDateBasisLabel = (date) =>
   `${formatMonthDayText(date)}${MESSAGES.seasonDateBasisSuffix}`;
 
-const createStatusLine = (seasonalNormal, observedEvents, observations, selectedDate) => {
-  const isObservationYear =
-    observedEvents !== null && observations.year === selectedDate.getFullYear();
+const createStatusLine = (seasonalNormal, observedEventsForYear, observations, selectedDate) => {
   const { events, observedCount } = mergeObservedEvents(
     seasonalNormal.events,
-    isObservationYear ? observedEvents : [],
+    observedEventsForYear,
   );
   const basis = getBasisText(
     observations?.year,
@@ -110,13 +112,41 @@ const createSeasonSection = (site, topicData, observations, selectedDate) => {
     );
   }
   section.append(
-    createStatusLine(seasonalNormal, observedEvents, observations, selectedDate),
+    createStatusLine(
+      seasonalNormal,
+      getObservedEventsForYear(site, topicData, observations, selectedDate.getFullYear()),
+      observations,
+      selectedDate,
+    ),
     createStationLine(seasonalNormal),
   );
   return section;
 };
 
 let shownSiteArguments = null;
+let getNearbyFestivals = () => null;
+
+export const setNearbyFestivalsProvider = (provider) => {
+  getNearbyFestivals = provider;
+};
+
+const createNearbySections = (site, topicData, observations, selectedDate) => {
+  const festivals = getNearbyFestivals();
+  if (festivals === null) {
+    return [];
+  }
+  const siteContext = {
+    site,
+    topicId: topicData.topic.id,
+    observedEvents: getObservedEventsForYear(
+      site,
+      topicData,
+      observations,
+      selectedDate.getFullYear(),
+    ),
+  };
+  return [createNearbyFestivalsSection(siteContext, festivals, selectedDate)];
+};
 
 export const closeInfoPanel = () => {
   shownSiteArguments = null;
@@ -135,7 +165,8 @@ export const showSiteInfo = (site, month, topicData, observations, selectedDate)
   const seasonSections = site.seasonalNormal
     ? [createSeasonSection(site, topicData, observations, selectedDate)]
     : [];
-  body.replaceChildren(...seasonSections, ...entries);
+  const nearbySections = createNearbySections(site, topicData, observations, selectedDate);
+  body.replaceChildren(...seasonSections, ...entries, ...nearbySections);
   panel().hidden = false;
 };
 

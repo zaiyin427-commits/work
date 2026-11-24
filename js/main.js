@@ -15,6 +15,7 @@ import {
   showSiteInfo,
   closeInfoPanel,
   refreshSiteInfo,
+  setNearbyFestivalsProvider,
   setEmptyMonthMessageVisible,
 } from "./infoPanel.js";
 
@@ -154,7 +155,15 @@ const start = async () => {
   map.on("popupopen", dateCalendar.collapseIfCompact);
   render();
   if (festivalLayer) {
-    festivalLayer.setShown(initFestivalToggle(festivalLayer.setShown));
+    let festivalsShown = initFestivalToggle((shown) => {
+      festivalsShown = shown;
+      festivalLayer.setShown(shown);
+      refreshSiteInfo(selectedDate);
+    });
+    setNearbyFestivalsProvider(() =>
+      festivalsShown ? festivalResult.festivalData.festivals : null,
+    );
+    festivalLayer.setShown(festivalsShown);
     renderFestivals();
   }
 };
