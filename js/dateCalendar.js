@@ -1,4 +1,5 @@
 import { CALENDAR, MESSAGES, getToday } from "./config.js";
+import { createCollapsiblePanel } from "./collapsiblePanel.js";
 import {
   getDaysInMonth,
   shiftMonth,
@@ -56,34 +57,15 @@ const createMonthButtons = (monthDate, onSelect) => {
   return buttons;
 };
 
-const createMarkerSpan = (marker) => {
-  const span = document.createElement("span");
-  span.setAttribute("aria-hidden", "true");
-  span.textContent = ` ${marker}`;
-  return span;
-};
-
 export const initDateCalendar = (
   initialDate,
   { onChange, onUserInput = () => {}, onExpand = () => {} },
 ) => {
   const card = byId("date-calendar");
-  const toggle = byId("calendar-toggle");
   const title = byId("calendar-title");
   const grid = byId("calendar-grid");
   let selectedDate = startOfDay(initialDate);
   let shownMonthKey = null;
-
-  const compactLayout = window.matchMedia(CALENDAR.compactMediaQuery);
-
-  const showToggleLabel = () => {
-    const isExpanded = card.classList.contains("is-expanded");
-    const marker = isExpanded
-      ? MESSAGES.calendarExpandedMarker
-      : MESSAGES.calendarCollapsedMarker;
-    toggle.replaceChildren(formatMonthDayText(selectedDate), createMarkerSpan(marker));
-    toggle.setAttribute("aria-expanded", String(isExpanded));
-  };
 
   const showSelection = () => {
     grid.querySelectorAll("button").forEach((button) =>
@@ -114,7 +96,7 @@ export const initDateCalendar = (
   const show = () => {
     showMonth();
     showSelection();
-    showToggleLabel();
+    collapsiblePanel.refreshLabel();
   };
 
   const select = (date) => {
@@ -127,40 +109,14 @@ export const initDateCalendar = (
     onChange(selectedDate);
   };
 
-  const collapse = () => {
-    if (!card.classList.contains("is-expanded")) {
-      return;
-    }
-    const hadFocusInBody = byId("calendar-body").contains(document.activeElement);
-    card.classList.remove("is-expanded");
-    showToggleLabel();
-    if (hadFocusInBody) {
-      toggle.focus();
-    }
-  };
-
-  const collapseIfCompact = () => {
-    if (compactLayout.matches) {
-      collapse();
-    }
-  };
-
-  const expand = () => {
-    card.classList.add("is-expanded");
-    showToggleLabel();
-    if (compactLayout.matches) {
-      onExpand();
-    }
-  };
-
-  const applyLayoutDefault = () => {
-    if (compactLayout.matches) {
-      collapse();
-      return;
-    }
-    card.classList.add("is-expanded");
-    showToggleLabel();
-  };
+  const collapsiblePanel = createCollapsiblePanel({
+    panel: card,
+    toggle: byId("calendar-toggle"),
+    body: byId("calendar-body"),
+    getLabel: () => formatMonthDayText(selectedDate),
+    onExpand,
+    escapeTarget: document,
+  });
 
   function selectByUser(date) {
     onUserInput();
@@ -169,7 +125,7 @@ export const initDateCalendar = (
 
   function selectDayByUser(date) {
     selectByUser(date);
-    collapseIfCompact();
+    collapsiblePanel.collapseIfCompact();
   }
 
   byId("calendar-prev").addEventListener("click", () =>
@@ -179,22 +135,16 @@ export const initDateCalendar = (
     selectByUser(shiftMonth(selectedDate, CALENDAR.monthsPerStep)),
   );
   byId("calendar-today").addEventListener("click", () => selectByUser(getToday()));
-  toggle.addEventListener("click", () =>
-    card.classList.contains("is-expanded") ? collapse() : expand(),
-  );
-  compactLayout.addEventListener("change", applyLayoutDefault);
-  document.addEventListener("keydown", (event) => {
-    if (event.key === CALENDAR.collapseKey) {
-      collapse();
-    }
-  });
 
   byId("calendar-weekdays").replaceChildren(
     ...CALENDAR.weekdayLabels.map(createWeekdayCell),
   );
-  applyLayoutDefault();
   show();
   card.hidden = false;
 
-  return { setDate: select, getDate: () => selectedDate, collapseIfCompact };
+  return {
+    setDate: select,
+    getDate: () => selectedDate,
+    collapseIfCompact: collapsiblePanel.collapseIfCompact,
+  };
 };

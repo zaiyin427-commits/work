@@ -26,6 +26,7 @@ js/festivalList.js          왼쪽 "축제" 목록 패널
 js/nearbyFestivals.js       명소 패널의 "근처 축제" 목록
 js/geoUtils.js              두 지점 사이 거리 계산
 js/dateCalendar.js          날짜 달력(선택 날짜, 이전/다음 달, 오늘)
+js/collapsiblePanel.js      접고 펼 수 있는 패널 공통 동작(달력·축제 목록)
 js/dateUtils.js             날짜 계산 도우미
 js/playControl.js           날짜 자동 재생 버튼(달력 안)
 js/infoPanel.js             종 설명·관찰 팁 패널

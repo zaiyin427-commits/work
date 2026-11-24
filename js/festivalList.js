@@ -1,4 +1,5 @@
-import { CALENDAR, FESTIVAL, FESTIVAL_STATUS, MESSAGES } from "./config.js";
+import { FESTIVAL, FESTIVAL_STATUS, MESSAGES } from "./config.js";
+import { createCollapsiblePanel } from "./collapsiblePanel.js";
 import { parseFestival, getFestivalState } from "./festivalStatus.js";
 import { formatPeriod, createTextElement, createStatusLine } from "./festivalLayer.js";
 
@@ -57,67 +58,23 @@ const createItem = ({ festival, state }, topicTitles, onSelect) => {
   return item;
 };
 
-const createMarkerSpan = (marker) => {
-  const span = document.createElement("span");
-  span.setAttribute("aria-hidden", "true");
-  span.textContent = ` ${marker}`;
-  return span;
-};
-
 export const initFestivalList = (festivals, topicTitles, { onSelect, onExpand }) => {
   const panel = byId("festival-list");
   const toggle = byId("festival-list-toggle");
   const body = byId("festival-list-body");
   const parsedFestivals = festivals.map(parseFestival);
-  const compactLayout = window.matchMedia(CALENDAR.compactMediaQuery);
   let count = 0;
 
-  const showToggleLabel = () => {
-    const isExpanded = panel.classList.contains("is-expanded");
-    const marker = isExpanded
-      ? MESSAGES.calendarExpandedMarker
-      : MESSAGES.calendarCollapsedMarker;
-    toggle.replaceChildren(
-      `${MESSAGES.festivalListHeadingPrefix}${count}${MESSAGES.festivalListHeadingSuffix}`,
-      createMarkerSpan(marker),
-    );
-    toggle.setAttribute("aria-expanded", String(isExpanded));
-  };
-
-  const collapse = () => {
-    if (!panel.classList.contains("is-expanded")) {
-      return;
-    }
-    const hadFocusInBody = body.contains(document.activeElement);
-    panel.classList.remove("is-expanded");
-    showToggleLabel();
-    if (hadFocusInBody) {
-      toggle.focus();
-    }
-  };
-
-  const collapseIfCompact = () => {
-    if (compactLayout.matches) {
-      collapse();
-    }
-  };
-
-  const expand = () => {
-    panel.classList.add("is-expanded");
-    showToggleLabel();
-    if (compactLayout.matches) {
-      onExpand();
-    }
-  };
-
-  const applyLayoutDefault = () => {
-    if (compactLayout.matches) {
-      collapse();
-      return;
-    }
-    panel.classList.add("is-expanded");
-    showToggleLabel();
-  };
+  const collapsiblePanel = createCollapsiblePanel({
+    panel,
+    toggle,
+    body,
+    getLabel: () => `${MESSAGES.festivalListHeadingPrefix}${count}${MESSAGES.festivalListHeadingSuffix}`,
+    onExpand,
+    escapeTarget: panel,
+    stopsEscapePropagation: true,
+  });
+  const { collapse, collapseIfCompact, isExpanded, isCompact, refreshLabel } = collapsiblePanel;
 
   const restoreFocus = (focusedFestivalId) => {
     const sameButton = [...body.querySelectorAll("button")].find(
@@ -143,17 +100,17 @@ export const initFestivalList = (festivals, topicTitles, { onSelect, onExpand })
         createTextElement("p", MESSAGES.festivalSourceLine, classOf("__source")),
       );
     }
-    showToggleLabel();
+    refreshLabel();
     if (hadFocusInBody) {
       restoreFocus(focusedFestivalId);
     }
   };
 
-  const isListBesideMap = () => !compactLayout.matches && panel.classList.contains("is-expanded");
+  const isListBesideMap = () => !isCompact() && isExpanded();
 
   const getRightPadding = () => {
     const gap = FESTIVAL.popupGap;
-    return compactLayout.matches
+    return isCompact()
       ? gap
       : byId("side-column").getBoundingClientRect().width + 2 * gap;
   };
@@ -183,18 +140,6 @@ export const initFestivalList = (festivals, topicTitles, { onSelect, onExpand })
     };
   };
 
-  toggle.addEventListener("click", () =>
-    panel.classList.contains("is-expanded") ? collapse() : expand(),
-  );
-  compactLayout.addEventListener("change", applyLayoutDefault);
-  panel.addEventListener("keydown", (event) => {
-    if (event.key === CALENDAR.collapseKey && panel.classList.contains("is-expanded")) {
-      event.stopPropagation();
-      collapse();
-    }
-  });
-
-  applyLayoutDefault();
   panel.hidden = false;
 
   return { render, collapseIfCompact, makeRoomForPopup, getPopupPadding };
