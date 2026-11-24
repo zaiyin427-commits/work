@@ -27,11 +27,14 @@ js/infoPanel.js             종 설명·관찰 팁 패널
 js/seasonStatus.js          계절 시기 계산(평년값·관측값 기준)
 scripts/updateSeasonObservations.mjs  기상청 계절관측값 갱신
 scripts/kma-config.json     기상청 갱신 스크립트 설정
+scripts/buildFestivals.mjs  TourAPI 축제 데이터 수집
+scripts/tourapi-config.json 축제 수집 스크립트 설정
 data/forsythia.json         개나리 명소 데이터
 data/azalea.json            진달래 명소 데이터
 data/cherry-blossom.json    벚꽃 명소 데이터
 data/autumn-foliage.json    단풍 명소 데이터
 data/season-observations.json  기상청 계절관측값(스크립트가 생성)
+data/festivals.json         벚꽃·단풍 등 축제 데이터(스크립트가 생성, 아직 지도에 표시하지 않음)
 README.md                   이 문서
 ```
 
@@ -72,6 +75,49 @@ node scripts/updateSeasonObservations.mjs --inspect 108   # 관측소 번호의 
 - `responseFormat`: `fieldSeparator`(`,` `;` `|` `tab` `whitespace` 중 하나)와 관측소·관측일·계절 코드 열의 0부터 시작하는 번호(`stationIndex`, `observedAtIndex`, `ssnIdIndex`, `ssnMdIndex`).
 - 응답이 오류이거나 자료 행이 없거나 날짜·연도·관측소가 맞지 않으면 중단하며, 기존 파일에 이벤트가 하나라도 있으면(연도와 무관) 0건 결과로 덮어쓰지 않는다. 리다이렉트(3xx) 응답은 인증키 유출을 막기 위해 따라가지 않고 실패로 처리한다.
 - `allowInsecureApiUrlForTesting`은 로컬 루프백(127.0.0.1) 테스트 전용이며, 커밋되는 설정에서는 반드시 `false`로 둔다.
+
+## 축제 데이터 갱신 (TourAPI)
+
+벚꽃·단풍·개나리·진달래 관련 축제를 한국관광공사 TourAPI에서 받아 `data/festivals.json`에 쓴다. 환경 변수 `TOUR_API_KEY`에 공공데이터포털의 한국관광공사 국문 관광정보 서비스(KorService2) **일반 인증키(Decoding)**가 있어야 하며, 키는 어떤 파일에도 쓰거나 커밋하지 않는다.
+
+```
+TOUR_API_KEY=... node scripts/buildFestivals.mjs           # 드라이런(요약만 출력, 파일을 쓰지 않음)
+TOUR_API_KEY=... node scripts/buildFestivals.mjs --write   # data/festivals.json에 기록
+```
+
+설정은 `scripts/tourapi-config.json`. `searchFestival2`를 호출해 올해 1월 1일에서 `eventStartLookbackYears`년 전 1월 1일부터 시작하는 행사를 모든 페이지에 걸쳐 받고, 제목에 `topicKeywords`의 키워드가 들어 있는 축제만 남긴다. 연중 행사(`yearRoundMinimumDays`일 이상)와 `koreaBounds` 밖의 좌표는 제외하고, 불완전한 페이지가 하나라도 있으면 오류로 중단한다. 브라우저는 API를 호출하지 않고 저장된 정적 JSON만 읽으며, 이미지는 저장하지 않는다.
+
+`data/festivals.json` 형식:
+
+```json
+{
+  "source": { "name": "", "url": "" },
+  "updatedAt": "YYYY-MM-DD",
+  "eventStartDate": "YYYY-MM-DD",
+  "festivals": [
+    { "id": "", "title": "", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD",
+      "address": "", "lat": 0, "lng": 0, "topicIds": ["cherry-blossom"] }
+  ]
+}
+```
+
+| 설정 키 | 설명 |
+|---|---|
+| `apiUrl` | `searchFestival2` 엔드포인트 |
+| `allowInsecureApiUrlForTesting` | 로컬 테스트 전용, 커밋되는 설정에서는 `false` |
+| `authKeyEnvironmentVariable` | 인증키를 읽을 환경 변수 이름(`TOUR_API_KEY`) |
+| `mobileOS`, `mobileApp`, `userAgent` | API 요청에 붙이는 식별 값 |
+| `eventStartLookbackYears` | 올해 1월 1일에서 몇 년 전부터의 행사를 받을지 |
+| `rowsPerPage`, `maxPages` | 페이지당 건수와 최대 페이지 수 |
+| `requestIntervalMilliseconds`, `requestTimeoutMilliseconds` | 요청 간격과 제한 시간 |
+| `maxRetries`, `retryWaitMilliseconds` | 일시적 오류의 재시도 횟수와 대기 시간 |
+| `outputFile` | 결과를 쓸 파일 |
+| `yearRoundMinimumDays` | 이 일수 이상 이어지는 행사는 연중 행사로 보고 제외 |
+| `koreaBounds` | 이 위경도 범위 밖의 좌표는 제외 |
+| `topicKeywords` | 소재 ID별 제목 키워드(하나라도 들어 있으면 그 소재의 축제) |
+| `source` | 결과 파일에 기록하는 출처 이름과 URL |
+
+축제 데이터 출처: 한국관광공사 TourAPI(https://api.visitkorea.or.kr, 공공데이터포털 국문 관광정보 서비스).
 
 ## 새 소재 추가
 

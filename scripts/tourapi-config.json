@@ -1,0 +1,25 @@
+{
+  "apiUrl": "https://apis.data.go.kr/B551011/KorService2/searchFestival2",
+  "allowInsecureApiUrlForTesting": false,
+  "authKeyEnvironmentVariable": "TOUR_API_KEY",
+  "mobileOS": "ETC",
+  "mobileApp": "SeasonMap",
+  "userAgent": "seasonal-map-updater/0.1",
+  "eventStartLookbackYears": 1,
+  "rowsPerPage": 100,
+  "maxPages": 50,
+  "requestIntervalMilliseconds": 500,
+  "requestTimeoutMilliseconds": 30000,
+  "maxRetries": 2,
+  "retryWaitMilliseconds": 3000,
+  "outputFile": "data/festivals.json",
+  "yearRoundMinimumDays": 300,
+  "koreaBounds": { "minLat": 33, "maxLat": 38.7, "minLng": 124.5, "maxLng": 131 },
+  "topicKeywords": {
+    "cherry-blossom": ["벚꽃"],
+    "autumn-foliage": ["단풍", "가을꽃", "억새"],
+    "forsythia": ["개나리"],
+    "azalea": ["진달래"]
+  },
+  "source": { "name": "한국관광공사 TourAPI", "url": "https://api.visitkorea.or.kr" }
+}
