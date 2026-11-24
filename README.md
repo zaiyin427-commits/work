@@ -23,6 +23,8 @@ js/speciesIcons.js          종별 지도 아이콘
 js/dateCalendar.js          날짜 달력(선택 날짜, 이전/다음 달, 오늘)
 js/dateUtils.js             날짜 계산 도우미
 js/migrationAnimation.js    철새 이동 애니메이션
+js/realTrack.js             실제 GPS 추적 경로 표시
+js/mapLegend.js             지도 범례(실제·추정 경로, 자료 출처)
 js/playControl.js           날짜 자동 재생 버튼(달력 안)
 js/infoPanel.js             종 설명·관찰 팁 패널
 js/topicFilter.js           소재 켜고 끄기 토글 버튼
@@ -31,10 +33,13 @@ scripts/updateMonthsFromGbif.mjs  GBIF 기록으로 월 정보 갱신
 scripts/gbif-config.json    갱신 스크립트 설정
 scripts/updateSeasonObservations.mjs  기상청 계절관측값 갱신
 scripts/kma-config.json     기상청 갱신 스크립트 설정
+scripts/buildMovebankTrack.mjs  Movebank 실제 추적 경로 생성
+scripts/movebank-config.json    추적 경로 생성 스크립트 설정
 data/migratory-birds.json   철새 도래지 데이터
 data/cherry-blossom.json    벚꽃 명소 데이터
 data/autumn-foliage.json    단풍 명소 데이터
 data/season-observations.json  기상청 계절관측값(스크립트가 생성)
+data/tracks/white-naped-crane.json  재두루미 실제 추적 경로(스크립트가 생성)
 README.md                   이 문서
 ```
 
@@ -58,6 +63,18 @@ README.md                   이 문서
 장소(site)의 선택 필드 `seasonalNormal`은 기상청 평년값이다: `{ "stationName": "", "stationNumber": 0, "isProxy": false, "item": "", "events": [ { "name": "", "date": "MM-DD" } ] }` (`isProxy`가 true이면 가까운 관측소 값을 빌려 쓴 것).
 
 `data/season-observations.json`은 기상청 관측값 파일이다: `{ "source", "year", "updatedAt", "sites": { "<topicId>/<siteId>": [ { "name": "", "date": "MM-DD" } ] } }`.
+
+실제 추적 경로 파일(`data/tracks/*.json`)은 `scripts/buildMovebankTrack.mjs`가 만든다:
+
+```json
+{
+  "speciesId": "<철새 데이터의 speciesId>", "speciesName": "", "individualName": "", "season": "2017-2018", "precisionDegrees": 0.1,
+  "source": { "name": "", "citation": "", "doi": "", "license": "", "licenseUrl": "" },
+  "points": [ ["YYYY-MM-DD", 위도, 경도] ]
+}
+```
+
+`points`는 날짜순이며 하루 한 점이다. `source`의 다섯 필드는 모두 필수이고, 범례에 출처·라이선스 링크(`doi`, `licenseUrl`은 http(s) 주소여야 링크로 표시)와 가공 내용(`precisionDegrees`)이 표시된다. 어떤 파일을 어느 소재에 붙일지는 `js/config.js`의 `REAL_TRACKS`(`{ dataFile, topicId }` 목록)에서 정하며, 범례가 보이는 소재는 `MAP_LEGEND.topicId`이다. 범례에는 `REAL_TRACKS`의 첫 번째 추적만 표시한다.
 
 ## 월 데이터 갱신 (GBIF)
 
@@ -102,6 +119,35 @@ node scripts/updateSeasonObservations.mjs --inspect 108   # 관측소 번호의 
 - `responseFormat`: `fieldSeparator`(`,` `;` `|` `tab` `whitespace` 중 하나)와 관측소·관측일·계절 코드 열의 0부터 시작하는 번호(`stationIndex`, `observedAtIndex`, `ssnIdIndex`, `ssnMdIndex`).
 - 응답이 오류이거나 자료 행이 없거나 날짜·연도·관측소가 맞지 않으면 중단하며, 기존 파일에 이벤트가 하나라도 있으면(연도와 무관) 0건 결과로 덮어쓰지 않는다. 리다이렉트(3xx) 응답은 인증키 유출을 막기 위해 따라가지 않고 실패로 처리한다.
 - `allowInsecureApiUrlForTesting`은 로컬 루프백(127.0.0.1) 테스트 전용이며, 커밋되는 설정에서는 반드시 `false`로 둔다.
+
+## 철새 실제 추적 경로
+
+재두루미 1마리('Borzya')의 2017–2018 시즌(2017-09-01 ~ 2018-04-30) 실제 GPS 경로를 보여준다. 하루 1점(그날 위치의 중앙값)이고, 좌표는 0.1도로 반올림했으며, 번식기(5–8월)는 제외했다. 점선 애니메이션 선은 재두루미를 포함해 모두 대략적인 번식 지역을 바탕으로 한 추정 경로이며, 실제 GPS 경로는 실선뿐이다.
+
+데이터 출처: Movebank Data Repository, Batbayar N, Galtbalt B, Natsagdorj T, Sukhbaatar T, Wikelski M. 2024. Data from: Study "White-naped crane Mongolia WSCC". https://doi.org/10.5441/001/1.600 (CC BY-NC 4.0, 비영리 용도로만 사용). 관련 논문: Yanco SW et al. 2024, PNAS, https://doi.org/10.1073/pnas.2316827121
+
+```
+node scripts/buildMovebankTrack.mjs          # 드라이런(요약만 출력, 파일을 쓰지 않음)
+node scripts/buildMovebankTrack.mjs --write  # data/tracks/white-naped-crane.json 생성
+```
+
+Node 18.17 이상이 필요하다(`URL.canParse` 사용). 약 42MB의 원본 CSV를 내려받아 집계하며, 원본은 저장하지 않는다. 전송이 중간에 끊기는 환경을 위해 구간(Range) 요청으로 나누어 받는다. 하루의 구분은 UTC 날짜 기준이다. 설정은 `scripts/movebank-config.json`.
+
+| 키 | 의미 |
+|---|---|
+| `dataUrl` | 원본 CSV 주소 |
+| `outputFile` | 생성한 경로 파일을 저장할 위치(프로젝트 루트 기준 상대 경로) |
+| `speciesId` | `data/migratory-birds.json`의 종 id와 같아야 한다(경로 색상이 이 종에서 정해진다) |
+| `speciesName` | 화면에 표시할 종 이름 |
+| `individualId` | 사용할 개체의 ID |
+| `individualName` | 화면에 표시할 개체 이름 |
+| `userAgent` | 원본 CSV를 요청할 때 보내는 User-Agent |
+| `seasonStart`, `seasonEnd` | 집계할 시즌의 시작·끝 날짜 |
+| `excludedMonths` | 제외할 월(번식기) 목록 |
+| `precisionDegrees` | 좌표 반올림 단위(도) |
+| `downloadChunkBytes` | 구간(Range) 요청 한 번에 받는 바이트 수 |
+| `maxChunkRetries` | 구간 요청 실패 시 재시도 횟수 |
+| `source` | 출처 정보(`name`, `citation`, `doi`, `license`, `licenseUrl`) |
 
 ## 새 소재 추가
 

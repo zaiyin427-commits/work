@@ -11,9 +11,24 @@
 </head>
 <body>
   <div id="map"></div>
-  <div id="status-messages">
-    <p id="error-message" role="alert" hidden></p>
-    <p id="empty-month-message" hidden>이 달에는 표시할 곳이 없습니다.</p>
+  <div id="map-overlays">
+    <aside id="map-legend" aria-label="범례" hidden>
+      <ul id="legend-rows">
+        <li id="legend-real-track">
+          <span class="legend-swatch" aria-hidden="true"></span>
+          <span id="legend-real-track-text"></span>
+        </li>
+        <li id="legend-estimated">
+          <span class="legend-swatch legend-swatch--estimated" aria-hidden="true"></span>
+          <span id="legend-estimated-text"></span>
+        </li>
+      </ul>
+      <p id="legend-source"></p>
+    </aside>
+    <div id="status-messages">
+      <p id="error-message" role="alert" hidden></p>
+      <p id="empty-month-message" hidden>이 달에는 표시할 곳이 없습니다.</p>
+    </div>
   </div>
   <div id="topic-filter" role="group" aria-label="볼거리" hidden></div>
   <div id="side-column">

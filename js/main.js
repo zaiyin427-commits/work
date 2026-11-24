@@ -4,12 +4,15 @@ import {
   getToday,
   MESSAGES,
   SEASON_OBSERVATIONS_FILE,
+  REAL_TRACKS,
 } from "./config.js";
-import { loadTopicData, loadSeasonObservations } from "./dataLoader.js";
+import { loadTopicData, loadSeasonObservations, loadRealTrack } from "./dataLoader.js";
 import { createMap, createSiteLayer } from "./mapView.js";
 import { initDateCalendar } from "./dateCalendar.js";
 import { initPlayControl } from "./playControl.js";
 import { createMigrationAnimation } from "./migrationAnimation.js";
+import { createRealTrack } from "./realTrack.js";
+import { initMapLegend } from "./mapLegend.js";
 import { initTopicFilter } from "./topicFilter.js";
 import {
   initInfoPanel,
@@ -56,21 +59,23 @@ const loadTopicWithIdCheck = async (topic) => {
   return data;
 };
 
-const loadAllTopics = async () => {
-  const results = await Promise.allSettled(
-    TOPICS.map((topic) => loadTopicWithIdCheck(topic)),
-  );
+const loadAllSettled = async (entries, loadEntry) => {
+  const results = await Promise.allSettled(entries.map(loadEntry));
   const loaded = [];
   const failures = [];
   results.forEach((result, index) => {
     if (result.status === "fulfilled") {
       loaded.push(result.value);
     } else {
-      failures.push({ file: TOPICS[index].dataFile, error: result.reason });
+      failures.push({ file: entries[index].dataFile, error: result.reason });
     }
   });
   return { loaded, failures };
 };
+
+const loadAllTopics = () => loadAllSettled(TOPICS, loadTopicWithIdCheck);
+
+const loadAllRealTracks = () => loadAllSettled(REAL_TRACKS, loadRealTrack);
 
 const loadObservationsOrReport = async () => {
   try {
@@ -89,12 +94,21 @@ const start = async () => {
   if (typeof L === "undefined") {
     throw new StartupError(MESSAGES.mapLibraryFailed);
   }
-  const [{ loaded, failures: topicFailures }, observationsResult] =
-    await Promise.all([loadAllTopics(), loadObservationsOrReport()]);
+  const [
+    { loaded, failures: topicFailures },
+    observationsResult,
+    { loaded: tracks, failures: trackFailures },
+  ] = await Promise.all([
+    loadAllTopics(),
+    loadObservationsOrReport(),
+    loadAllRealTracks(),
+  ]);
   const { observations } = observationsResult;
-  const failures = observationsResult.failure
-    ? [...topicFailures, observationsResult.failure]
-    : topicFailures;
+  const failures = [
+    ...topicFailures,
+    ...(observationsResult.failure ? [observationsResult.failure] : []),
+    ...trackFailures,
+  ];
   if (failures.length > 0) {
     reportLoadFailures(failures);
   }
@@ -104,6 +118,8 @@ const start = async () => {
   const map = createMap("map");
   const siteLayer = createSiteLayer(map);
   const migrationAnimation = createMigrationAnimation(map);
+  const realTrack = createRealTrack(map, tracks);
+  const mapLegend = initMapLegend(tracks, loaded);
   let enabledTopicIds = getDefaultEnabledTopicIds(loaded);
   let selectedDate = getToday();
   const getSelectedMonth = () => selectedDate.getMonth() + 1;
@@ -115,6 +131,8 @@ const start = async () => {
     closeInfoPanel();
     migrationAnimation.clear();
     const enabledTopics = getEnabledTopics();
+    realTrack.draw(enabledTopics, getSelectedMonth());
+    mapLegend.update(enabledTopicIds);
     const visibleCount = siteLayer.render(
       enabledTopics,
       getSelectedMonth(),
@@ -142,6 +160,7 @@ const start = async () => {
       if (monthChanged) {
         render();
         migrationAnimation.play(getEnabledTopics(), getSelectedMonth());
+        realTrack.animate();
       } else {
         refreshSiteInfo(selectedDate);
       }

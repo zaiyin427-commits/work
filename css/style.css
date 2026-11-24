@@ -19,6 +19,8 @@
   --calendar-nav-size: 40px;
   --calendar-button-height: 36px;
   --calendar-toggle-height: 40px;
+  --legend-max-width: 360px;
+  --legend-swatch-width: 28px;
 }
 
 * {
@@ -273,7 +275,7 @@ body {
   color: var(--muted-color);
 }
 
-#status-messages {
+#map-overlays {
   position: fixed;
   left: var(--gap);
   right: calc(var(--gap) + var(--zoom-control-width));
@@ -284,6 +286,58 @@ body {
   gap: 8px;
   pointer-events: none;
   z-index: 2000;
+}
+
+#status-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+#map-legend {
+  max-width: min(var(--legend-max-width), calc(100vw - var(--panel-width) - 3 * var(--gap)));
+  padding: 8px 12px;
+  background: var(--surface-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+#legend-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#legend-rows li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.legend-swatch {
+  flex: none;
+  width: var(--legend-swatch-width);
+  border-top: 3px solid var(--legend-swatch-color, var(--text-color));
+}
+
+.legend-swatch--estimated {
+  border-top-style: dashed;
+  border-top-color: var(--muted-color);
+}
+
+#legend-source {
+  margin: 0;
+  color: var(--muted-color);
+}
+
+#legend-source a {
+  color: var(--accent-color);
+  pointer-events: auto;
 }
 
 #empty-month-message,
@@ -303,6 +357,7 @@ body {
   border: 1px solid var(--error-color);
 }
 
+#map-legend a:focus-visible,
 #topic-filter button:focus-visible,
 #date-calendar button:focus-visible,
 #info-panel-close:focus-visible {
@@ -349,8 +404,15 @@ body {
     display: none;
   }
 
-  body:has(#date-calendar.is-expanded) .leaflet-control-zoom {
+  body:has(#date-calendar.is-expanded) .leaflet-control-zoom,
+  body:has(#date-calendar.is-expanded) #map-legend {
     display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  :root {
+    --attribution-height: 52px;
   }
 }
 
@@ -415,7 +477,12 @@ body {
     z-index: 1000;
   }
 
-  body:has(#info-panel:not([hidden])) .leaflet-control-zoom {
+  #map-legend {
+    max-width: 100%;
+  }
+
+  body:has(#info-panel:not([hidden])) .leaflet-control-zoom,
+  body:has(#info-panel:not([hidden])) #map-legend {
     display: none;
   }
 }

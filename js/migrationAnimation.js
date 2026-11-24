@@ -3,7 +3,7 @@ import { getObservationsInMonth } from "./mapView.js";
 
 const getPreviousMonth = (month) => (month === MONTH_MIN ? MONTH_MAX : month - 1);
 
-const prefersReducedMotion = () =>
+export const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const getControlPoint = (start, end) => {
@@ -97,7 +97,7 @@ const getDotRatio = (elapsed, dotIndex) => {
   return Math.min(Math.max((elapsed - delay) / travelTime, 0), 1);
 };
 
-const ensurePane = (map) => {
+export const ensurePane = (map) => {
   const { paneName, paneZIndex } = MIGRATION_ANIMATION;
   const pane = map.getPane(paneName) ?? map.createPane(paneName);
   pane.style.zIndex = paneZIndex;

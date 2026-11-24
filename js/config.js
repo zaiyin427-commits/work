@@ -5,13 +5,19 @@ export const MAP_CONFIG = {
   maxZoom: 14,
   tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   zoomControlPosition: "bottomright",
-  tileAttribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | 관찰 데이터: <a href=\"https://www.gbif.org\">GBIF.org</a> | 계절 정보: 기상청",
+  tileAttribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | 관찰 데이터: <a href=\"https://www.gbif.org\">GBIF.org</a> | 계절 정보: 기상청 | 철새 추적: Movebank (CC BY-NC 4.0)",
 };
 
+export const MIGRATORY_BIRDS_TOPIC_ID = "migratory-birds";
+
 export const TOPICS = [
-  { id: "migratory-birds", label: "철새", dataFile: "data/migratory-birds.json" },
+  { id: MIGRATORY_BIRDS_TOPIC_ID, label: "철새", dataFile: "data/migratory-birds.json" },
   { id: "cherry-blossom", label: "벚꽃", dataFile: "data/cherry-blossom.json" },
   { id: "autumn-foliage", label: "단풍", dataFile: "data/autumn-foliage.json" },
+];
+
+export const REAL_TRACKS = [
+  { dataFile: "data/tracks/white-naped-crane.json", topicId: MIGRATORY_BIRDS_TOPIC_ID },
 ];
 
 export const TOPIC_ENABLED_BY_DEFAULT = true;
@@ -77,6 +83,18 @@ export const MESSAGES = {
   seasonProxyNote: "근처 관측소",
   seasonEventSeparator: " · ",
   seasonBeforeSuffix: " 전",
+  legendRealTrackPrefix: "실제 GPS 추적: ",
+  legendRealTrackCount: "1마리",
+  legendSeasonSeparator: "–",
+  legendEstimated: "추정 경로 (번식지 대략값 기준)",
+  legendSourcePrefix: "추적 자료: ",
+  trackSpeciesMissing: "실제 추적의 종이 철새 데이터에 없어 대체 색을 사용합니다:",
+  trackDoiInvalid: "추적 자료의 doi가 http(s) 주소로 바꿀 수 없습니다:",
+  trackLicenseUrlInvalid: "추적 자료의 licenseUrl이 http(s) 주소가 아닙니다:",
+  legendSourceSeparator: "·",
+  legendModificationPrefix: "일별 중앙값·",
+  legendModificationSuffix: "° 반올림으로 가공",
+  legendMultipleTracks: "실제 추적이 둘 이상 불러와졌지만 범례에는 첫 번째만 표시합니다.",
 };
 
 export const SEASON_OBSERVATIONS_FILE = "data/season-observations.json";
@@ -116,3 +134,31 @@ export const MIGRATION_ANIMATION = {
 export const PLAYBACK = {
   intervalMilliseconds: 3000,
 };
+
+export const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+export const LATITUDE_LIMIT = 90;
+
+export const LONGITUDE_LIMIT = 180;
+
+export const DOI_URL_PREFIX = "https://doi.org/";
+
+export const DOI_BARE_PATTERN = /^10\./;
+
+export const REAL_TRACK = {
+  pathClassName: "real-track-path",
+  dotClassName: "real-track-dot",
+  pathWeight: 4,
+  pathOpacity: 0.9,
+  dotRadius: 7,
+  dotFillOpacity: 1,
+  dotStrokeColor: "#ffffff",
+  dotStrokeWeight: 2,
+};
+
+export const MAP_LEGEND = {
+  topicId: MIGRATORY_BIRDS_TOPIC_ID,
+  swatchColorProperty: "--legend-swatch-color",
+};
+
+export const HTTP_URL_PATTERN = /^https?:\/\//;

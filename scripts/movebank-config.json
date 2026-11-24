@@ -1,0 +1,22 @@
+{
+  "dataUrl": "https://datarepository.movebank.org/server/api/core/bitstreams/c25f3610-f3f0-46ee-817f-b12445d2292f/content",
+  "outputFile": "data/tracks/white-naped-crane.json",
+  "speciesId": "white-naped-crane",
+  "speciesName": "재두루미",
+  "individualId": "27233947",
+  "individualName": "Borzya",
+  "seasonStart": "2017-09-01",
+  "seasonEnd": "2018-04-30",
+  "excludedMonths": [5, 6, 7, 8],
+  "precisionDegrees": 0.1,
+  "userAgent": "seasonal-map-updater/0.1",
+  "downloadChunkBytes": 2097152,
+  "maxChunkRetries": 2,
+  "source": {
+    "name": "Movebank Data Repository",
+    "citation": "Batbayar N, Galtbalt B, Natsagdorj T, Sukhbaatar T, Wikelski M. 2024. Data from: Study \"White-naped crane Mongolia WSCC\". Movebank Data Repository. https://doi.org/10.5441/001/1.600",
+    "doi": "https://doi.org/10.5441/001/1.600",
+    "license": "CC BY-NC 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/"
+  }
+}
