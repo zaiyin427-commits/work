@@ -310,6 +310,19 @@ body {
   border-top-color: var(--muted-color);
 }
 
+#legend-go-to-position {
+  flex: none;
+  padding: 0 8px;
+  border: 1px solid var(--accent-color);
+  border-radius: 999px;
+  background: var(--surface-color);
+  color: var(--accent-color);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 #legend-source {
   margin: 0;
   color: var(--muted-color);
@@ -338,6 +351,7 @@ body {
 }
 
 #map-legend a:focus-visible,
+#legend-go-to-position:focus-visible,
 #date-calendar button:focus-visible,
 #info-panel-close:focus-visible {
   outline: 3px solid var(--accent-color);

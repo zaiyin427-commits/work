@@ -55,11 +55,13 @@ const fillSource = (sourceElement, track) => {
   );
 };
 
-export const initMapLegend = (tracks, topicDataList) => {
+export const initMapLegend = (tracks, topicDataList, onGoToPosition) => {
   const legend = document.getElementById("map-legend");
   const realRow = document.getElementById("legend-real-track");
   const stayRow = document.getElementById("legend-stay-area");
   const sourceElement = document.getElementById("legend-source");
+  const goToButton = document.getElementById("legend-go-to-position");
+  let goToTarget = null;
   document.getElementById("legend-estimated-text").textContent = MESSAGES.legendEstimated;
   document.getElementById("legend-stay-area-text").textContent = MESSAGES.legendStayArea;
   const [firstTrack] = tracks;
@@ -77,6 +79,15 @@ export const initMapLegend = (tracks, topicDataList) => {
       row.style.setProperty(MAP_LEGEND.swatchColorProperty, trackColor),
     );
     fillSource(sourceElement, data);
+    goToButton.textContent = MESSAGES.legendGoToPosition;
+    goToButton.setAttribute("aria-label", `${data.individualName} ${MESSAGES.legendGoToPosition}`);
   }
+  goToButton.addEventListener("click", () => onGoToPosition(goToTarget));
   legend.hidden = !topicDataList.some((topicData) => topicData.topic.id === MAP_LEGEND.topicId);
+  return {
+    setGoToTarget: (latLng) => {
+      goToTarget = latLng;
+      goToButton.hidden = latLng === null;
+    },
+  };
 };

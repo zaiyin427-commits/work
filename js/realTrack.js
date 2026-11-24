@@ -315,12 +315,22 @@ export const createRealTrack = (map, tracks) => {
 
   const showDay = (selectedDate) => {
     dayPositionLayer.clearLayers();
-    segments.forEach(({ track, color }) => {
-      const marker = createDayPosition(track, color, selectedDate.getMonth() + 1, selectedDate.getDate());
-      if (marker !== null) {
-        marker.addTo(dayPositionLayer);
-      }
-    });
+    const markers = segments
+      .map(({ track, color }) =>
+        createDayPosition(track, color, selectedDate.getMonth() + 1, selectedDate.getDate()),
+      )
+      .filter((marker) => marker !== null);
+    markers.forEach((marker) => marker.addTo(dayPositionLayer));
+    return markers.length === 0 ? null : markers[0].getLatLng();
+  };
+
+  const moveTo = (latLng) => {
+    const zoom = Math.max(map.getZoom(), REAL_TRACK.goToPositionMinimumZoom);
+    if (prefersReducedMotion()) {
+      map.setView(latLng, zoom);
+    } else {
+      map.flyTo(latLng, zoom);
+    }
   };
 
   const animate = () => {
@@ -346,5 +356,5 @@ export const createRealTrack = (map, tracks) => {
     frameId = requestAnimationFrame(step);
   };
 
-  return { draw, showDay, animate };
+  return { draw, showDay, moveTo, animate };
 };

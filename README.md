@@ -132,6 +132,7 @@ node scripts/updateSeasonObservations.mjs --inspect 108   # 관측소 번호의 
 - 실선은 머문 구간을 타원의 중심 한 점으로 줄이고 이동 점은 그대로 둔 경로를 날짜순으로 잇는다. 그래서 선은 타원의 중심과 이동 점을 연결한다. 이 경로에 서로 다른 점이 2개(`pathMinimumDistinctPoints`) 미만이면 선을 그리지 않는다. 11–2월처럼 한 달 내내 철원에 머문 달은 타원 하나만 그린다.
 - 달이 바뀌면 움직이는 점이 이 실선을 따라 날짜순으로 타원의 중심과 이동 점을 차례로 지난다. 선이 없는 달은 움직이는 점도 없다. 예를 들어 3월은 철원 타원과 파주 타원을 지나 북쪽으로, 10월은 북쪽의 머문 지역에서 남쪽으로 내려와 철원 타원에 닿는다.
 - 선택한 날짜의 위치를 큰 점과 말풍선('Borzya · 2017년 11월 15일 위치')으로 표시한다. 선택한 날짜의 월·일(MM-DD)과 같은 기록을 찾는다(시즌이 1년이 안 되므로 월·일이 겹치지 않는다). 그날 기록이 없으면 같은 달 안에서 가장 가까운 이전 기록의 위치를 쓰고(이전 기록이 없으면 가장 가까운 이후 기록), 말풍선에 '기록 없음'과 실제로 쓴 기록의 날짜를 함께 적는다(예: 'Borzya · 2월 10일 기록 없음 (2월 3일 위치)'). 번식기(5–8월)처럼 그 달에 기록이 없으면 표시하지 않는다. 같은 달 안에서 날짜만 바꿔도 점이 따라 움직이고, 점은 클릭을 받지 않아 종 마커를 가리지 않는다(`js/realTrack.js`의 `showDay`, 설정은 `REAL_TRACK`의 `dayPosition*`·`dayLabelClassName`).
+- 점이 화면 밖에 있을 수 있으므로(9–10월·3–4월에는 중국·몽골에 있다) 범례의 실제 추적 줄에 '위치로 이동' 버튼을 둔다. 누르면 지도가 점으로 이동하며, 현재 확대 수준이 `REAL_TRACK.goToPositionMinimumZoom`(7) 이상이면 그대로 두고 그보다 낮으면 그 수준까지 확대한다. 모션 줄이기 설정에서는 애니메이션 없이 바로 이동한다. 점이 없는 달(번식기)이나 추적을 불러오지 못했을 때는 버튼이 숨겨진다(`js/realTrack.js`의 `showDay`·`moveTo`, `js/mapLegend.js`).
 
 데이터 출처: Movebank Data Repository, Batbayar N, Galtbalt B, Natsagdorj T, Sukhbaatar T, Wikelski M. 2024. Data from: Study "White-naped crane Mongolia WSCC". https://doi.org/10.5441/001/1.600 (CC BY-NC 4.0, 비영리 용도로만 사용). 관련 논문: Yanco SW et al. 2024, PNAS, https://doi.org/10.1073/pnas.2316827121
 

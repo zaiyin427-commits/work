@@ -112,15 +112,17 @@ const start = async () => {
   const siteLayer = createSiteLayer(map);
   const migrationAnimation = createMigrationAnimation(map);
   const realTrack = createRealTrack(map, tracks);
-  initMapLegend(tracks, loaded);
+  const mapLegend = initMapLegend(tracks, loaded, realTrack.moveTo);
   let selectedDate = getToday();
   const getSelectedMonth = () => selectedDate.getMonth() + 1;
+
+  const showDayPosition = () => mapLegend.setGoToTarget(realTrack.showDay(selectedDate));
 
   const render = () => {
     closeInfoPanel();
     migrationAnimation.clear();
     realTrack.draw(loaded, getSelectedMonth());
-    realTrack.showDay(selectedDate);
+    showDayPosition();
     const visibleCount = siteLayer.render(
       loaded,
       getSelectedMonth(),
@@ -146,7 +148,7 @@ const start = async () => {
         migrationAnimation.play(loaded, getSelectedMonth());
         realTrack.animate();
       } else {
-        realTrack.showDay(selectedDate);
+        showDayPosition();
         refreshSiteInfo(selectedDate);
       }
     },

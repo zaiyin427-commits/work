@@ -100,6 +100,7 @@ export const MESSAGES = {
   trackDayNoRecordSuffix: " 기록 없음",
   trackDayFallbackOpen: " (",
   trackDayFallbackClose: ")",
+  legendGoToPosition: "위치로 이동",
   legendMultipleTracks: "실제 추적이 둘 이상 불러와졌지만 범례에는 첫 번째만 표시합니다.",
 };
 
@@ -165,6 +166,7 @@ export const REAL_TRACK = {
   dayPositionRadius: 9,
   dayPositionStrokeWeight: 3,
   dayLabelClassName: "real-track-day-label",
+  goToPositionMinimumZoom: 7,
   stayAreaClassName: "real-track-stay-area",
   stayAreaMaxSpreadKilometers: 30,
   stayAreaMinimumRecords: 3,
