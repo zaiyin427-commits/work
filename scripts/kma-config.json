@@ -3,7 +3,7 @@
   "allowInsecureApiUrlForTesting": false,
   "allSeasonsCode": 0,
   "authKeyEnvironmentVariable": "KMA_AUTH_KEY",
-  "topicDataFiles": ["data/cherry-blossom.json", "data/autumn-foliage.json"],
+  "topicDataFiles": ["data/cherry-blossom.json", "data/autumn-foliage.json", "data/forsythia.json", "data/azalea.json"],
   "outputFile": "data/season-observations.json",
   "requestIntervalMilliseconds": 500,
   "maxRetries": 2,
@@ -19,6 +19,8 @@
     "headerColumns": ["YY", "STN", "TM", "SSN_ID", "SSN_MD"]
   },
   "eventCodes": {
+    "개나리/개화": { "ssnId": 203, "ssnMd": 202 },
+    "진달래/개화": { "ssnId": 204, "ssnMd": 202 },
     "벚나무/개화": { "ssnId": 205, "ssnMd": 202 },
     "벚나무/만발": { "ssnId": 205, "ssnMd": 203 },
     "유명산 단풍/단풍 시작": { "ssnId": 501, "ssnMd": 501 },

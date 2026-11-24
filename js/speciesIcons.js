@@ -17,7 +17,35 @@ const petalRing = (count, ringRadius, petalRadius, startAngle) =>
     return `<circle cx="${x}" cy="${y}" r="${petalRadius}"/>`;
   }).join("");
 
-const blossomCenter = `<circle cx="16" cy="16" r="2.4" fill="${SPECIES_ICON.outlineColor}" stroke="none"/>`;
+const AZALEA_PETAL_COUNT = 5;
+const AZALEA_CENTER_Y = 19;
+const AZALEA_STAMENS = [
+  { control1: [17, 12], control2: [21, 8], tip: [26, 7] },
+  { control1: [14, 12], control2: [10, 8], tip: [6, 8] },
+  { control1: [16, 14], control2: [16, 9], tip: [18, 3.5] },
+];
+const AZALEA_STAMEN_WIDTH = 0.9;
+const AZALEA_ANTHER_RADIUS = 1.7;
+const FORSYTHIA_PETAL_COUNT = 4;
+
+const roundCoordinate = (value) => Number(value.toFixed(2));
+
+const azaleaStamenPath = ({ control1, control2, tip }) =>
+  `M16 ${AZALEA_CENTER_Y} C${control1.join(" ")} ${control2.join(" ")} ${tip.join(" ")}`;
+
+const rotatedEllipses = (count, centerX, centerY, offset, radiusX, radiusY, startAngle) =>
+  Array.from({ length: count }, (_, index) => {
+    const angle = startAngle + (index * 2 * Math.PI) / count;
+    const degrees = roundCoordinate((angle * 180) / Math.PI);
+    return `<ellipse cx="${roundCoordinate(centerX + offset)}" cy="${centerY}" rx="${roundCoordinate(radiusX)}" ry="${roundCoordinate(radiusY)}" transform="rotate(${degrees} ${centerX} ${centerY})"/>`;
+  }).join("");
+
+const forsythiaFlower = (centerX, centerY, scale) =>
+  outlined(rotatedEllipses(FORSYTHIA_PETAL_COUNT, centerX, centerY, 6 * scale, 6.6 * scale, 2.5 * scale, Math.PI / 4)) +
+  `<circle cx="${centerX}" cy="${centerY}" r="${roundCoordinate(1.5 * scale)}" fill="${SPECIES_ICON.outlineColor}" stroke="none"/>`;
+
+const blossomCenterAt = (centerY) =>
+  `<circle cx="16" cy="${centerY}" r="2.4" fill="${SPECIES_ICON.outlineColor}" stroke="none"/>`;
 
 const ICON_BUILDERS = {
   crane: () =>
@@ -55,13 +83,22 @@ const ICON_BUILDERS = {
     `<circle cx="24.5" cy="8.5" r="1" fill="${SPECIES_ICON.outlineColor}"/>` +
     thickLine("M3 28.5 Q8 26.8 13 28.5 T23 28.5 T29 28.5", 1.2),
   "cherry-blossom": () =>
-    outlined(petalRing(5, 6.5, 5.6, -Math.PI / 2) + blossomCenter),
+    outlined(petalRing(5, 6.5, 5.6, -Math.PI / 2) + blossomCenterAt(16)),
   "double-cherry-blossom": () =>
     outlined(
       petalRing(5, 9, 6.2, -Math.PI / 2) +
         petalRing(5, 5.6, 5, -Math.PI / 2 + Math.PI / 5) +
-        blossomCenter,
+        blossomCenterAt(16),
     ),
+  azalea: () =>
+    outlined(rotatedEllipses(AZALEA_PETAL_COUNT, 16, AZALEA_CENTER_Y, 5.5, 6.8, 5.6, -Math.PI / 2)) +
+    AZALEA_STAMENS.map((stamen) => thickLine(azaleaStamenPath(stamen), AZALEA_STAMEN_WIDTH)).join("") +
+    outlined(AZALEA_STAMENS.map(({ tip: [x, y] }) => `<circle cx="${x}" cy="${y}" r="${AZALEA_ANTHER_RADIUS}"/>`).join("")) +
+    blossomCenterAt(AZALEA_CENTER_Y),
+  forsythia: () =>
+    thickLine("M3 29 C10 26 16 24 24 22", 1.6) +
+    forsythiaFlower(10, 11, 1) +
+    forsythiaFlower(23, 19, 0.8),
   "maple-leaf": () =>
     outlined(
       `<path d="M16 2 L19 8 L23 6 L22 13 L28 11 L26 17 L30 19 L22 22 L23 25 L17 24 L17 30 L15 30 L15 24 L9 25 L10 22 L2 19 L6 17 L4 11 L10 13 L9 6 L13 8 Z"/>`,

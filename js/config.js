@@ -11,16 +11,16 @@ export const MAP_CONFIG = {
 export const MIGRATORY_BIRDS_TOPIC_ID = "migratory-birds";
 
 export const TOPICS = [
-  { id: MIGRATORY_BIRDS_TOPIC_ID, label: "철새", dataFile: "data/migratory-birds.json" },
-  { id: "cherry-blossom", label: "벚꽃", dataFile: "data/cherry-blossom.json" },
-  { id: "autumn-foliage", label: "단풍", dataFile: "data/autumn-foliage.json" },
+  { id: MIGRATORY_BIRDS_TOPIC_ID, dataFile: "data/migratory-birds.json" },
+  { id: "forsythia", dataFile: "data/forsythia.json" },
+  { id: "azalea", dataFile: "data/azalea.json" },
+  { id: "cherry-blossom", dataFile: "data/cherry-blossom.json" },
+  { id: "autumn-foliage", dataFile: "data/autumn-foliage.json" },
 ];
 
 export const REAL_TRACKS = [
   { dataFile: "data/tracks/white-naped-crane.json", topicId: MIGRATORY_BIRDS_TOPIC_ID },
 ];
-
-export const TOPIC_ENABLED_BY_DEFAULT = true;
 
 export const MONTH_MIN = 1;
 export const MONTH_MAX = 12;
@@ -80,7 +80,7 @@ export const MESSAGES = {
   seasonObservedBasisSuffix: "년 관측 기준",
   seasonPartialObservedBasisSuffix: "년 관측·평년 기준",
   seasonStationLabel: "기준 관측소",
-  seasonProxyNote: "근처 관측소",
+  seasonProxyNote: "대체 관측소",
   seasonEventSeparator: " · ",
   seasonBeforeSuffix: " 전",
   legendRealTrackPrefix: "실제 GPS 추적: ",

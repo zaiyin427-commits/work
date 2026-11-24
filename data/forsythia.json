@@ -1,0 +1,64 @@
+{
+  "topic": { "id": "forsythia", "title": "개나리 명소" },
+  "species": {
+    "forsythia": {
+      "name": "개나리",
+      "description": "이른 봄 잎보다 먼저 노란 종 모양 꽃이 가지마다 가득 피는 갈잎떨기나무입니다. 둑과 산비탈, 하천변을 노랗게 물들입니다.",
+      "tips": "꽃이 막 피기 시작한 때부터 활짝 핀 때까지 볼만합니다. 햇빛이 비스듬한 오전이나 늦은 오후에 색이 더 선명합니다.",
+      "color": "#e8d400",
+      "icon": "forsythia"
+    }
+  },
+  "sites": [
+    {
+      "id": "eungbongsan",
+      "name": "서울 응봉산",
+      "lat": 37.5475,
+      "lng": 127.0293,
+      "seasonalNormal": { "stationName": "서울", "stationNumber": 108, "isProxy": false, "item": "개나리", "events": [{ "name": "개화", "date": "03-28" }] },
+      "observations": [
+        { "species": "forsythia", "months": [3, 4] }
+      ]
+    },
+    {
+      "id": "daegu-sincheon",
+      "name": "대구 신천",
+      "lat": 35.8585,
+      "lng": 128.6066,
+      "seasonalNormal": { "stationName": "대구", "stationNumber": 143, "isProxy": false, "item": "개나리", "events": [{ "name": "개화", "date": "03-18" }] },
+      "observations": [
+        { "species": "forsythia", "months": [3] }
+      ]
+    },
+    {
+      "id": "daejeon-banseokcheon",
+      "name": "대전 반석천",
+      "lat": 36.3809,
+      "lng": 127.3243,
+      "seasonalNormal": { "stationName": "대전", "stationNumber": 133, "isProxy": false, "item": "개나리", "events": [{ "name": "개화", "date": "03-26" }] },
+      "observations": [
+        { "species": "forsythia", "months": [3, 4] }
+      ]
+    },
+    {
+      "id": "gwangju-gwangjucheon",
+      "name": "광주 광주천",
+      "lat": 35.1542,
+      "lng": 126.9035,
+      "seasonalNormal": { "stationName": "광주", "stationNumber": 156, "isProxy": false, "item": "개나리", "events": [{ "name": "개화", "date": "03-21" }] },
+      "observations": [
+        { "species": "forsythia", "months": [3] }
+      ]
+    },
+    {
+      "id": "cheongju-musimcheon",
+      "name": "청주 무심천",
+      "lat": 36.64,
+      "lng": 127.48,
+      "seasonalNormal": { "stationName": "청주", "stationNumber": 131, "isProxy": false, "item": "개나리", "events": [{ "name": "개화", "date": "03-26" }] },
+      "observations": [
+        { "species": "forsythia", "months": [3, 4] }
+      ]
+    }
+  ]
+}

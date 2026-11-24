@@ -1,6 +1,5 @@
 import {
   TOPICS,
-  TOPIC_ENABLED_BY_DEFAULT,
   getToday,
   MESSAGES,
   SEASON_OBSERVATIONS_FILE,
@@ -13,7 +12,6 @@ import { initPlayControl } from "./playControl.js";
 import { createMigrationAnimation } from "./migrationAnimation.js";
 import { createRealTrack } from "./realTrack.js";
 import { initMapLegend } from "./mapLegend.js";
-import { initTopicFilter } from "./topicFilter.js";
 import {
   initInfoPanel,
   showSiteInfo,
@@ -85,11 +83,6 @@ const loadObservationsOrReport = async () => {
   }
 };
 
-const getDefaultEnabledTopicIds = (loadedTopics) =>
-  TOPIC_ENABLED_BY_DEFAULT
-    ? new Set(loadedTopics.map((topicData) => topicData.topic.id))
-    : new Set();
-
 const start = async () => {
   if (typeof L === "undefined") {
     throw new StartupError(MESSAGES.mapLibraryFailed);
@@ -119,22 +112,16 @@ const start = async () => {
   const siteLayer = createSiteLayer(map);
   const migrationAnimation = createMigrationAnimation(map);
   const realTrack = createRealTrack(map, tracks);
-  const mapLegend = initMapLegend(tracks, loaded);
-  let enabledTopicIds = getDefaultEnabledTopicIds(loaded);
+  initMapLegend(tracks, loaded);
   let selectedDate = getToday();
   const getSelectedMonth = () => selectedDate.getMonth() + 1;
-
-  const getEnabledTopics = () =>
-    loaded.filter((topicData) => enabledTopicIds.has(topicData.topic.id));
 
   const render = () => {
     closeInfoPanel();
     migrationAnimation.clear();
-    const enabledTopics = getEnabledTopics();
-    realTrack.draw(enabledTopics, getSelectedMonth());
-    mapLegend.update(enabledTopicIds);
+    realTrack.draw(loaded, getSelectedMonth());
     const visibleCount = siteLayer.render(
-      enabledTopics,
+      loaded,
       getSelectedMonth(),
       (site, month, topicData) => {
         dateCalendar.collapse();
@@ -145,10 +132,6 @@ const start = async () => {
   };
 
   initInfoPanel();
-  initTopicFilter(loaded, enabledTopicIds, (changedTopicIds) => {
-    enabledTopicIds = changedTopicIds;
-    render();
-  });
   const playControl = initPlayControl(
     () => selectedDate,
     (date) => dateCalendar.setDate(date),
@@ -159,7 +142,7 @@ const start = async () => {
       selectedDate = date;
       if (monthChanged) {
         render();
-        migrationAnimation.play(getEnabledTopics(), getSelectedMonth());
+        migrationAnimation.play(loaded, getSelectedMonth());
         realTrack.animate();
       } else {
         refreshSiteInfo(selectedDate);

@@ -7,12 +7,11 @@
   --error-color: #b42318;
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   --gap: 12px;
-  --control-height: 40px;
   --map-controls-reserve: 120px;
   --attribution-height: 24px;
   --zoom-control-width: 56px;
   --phone-calendar-width: 300px;
-  --phone-top-reserve: calc(3 * var(--gap) + 2 * var(--control-height));
+  --phone-top-reserve: calc(2 * var(--gap) + var(--calendar-toggle-height));
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --calendar-gap: 8px;
   --calendar-day-size: 34px;
@@ -46,37 +45,6 @@ body {
 
 .leaflet-bottom {
   margin-bottom: var(--safe-area-bottom);
-}
-
-#topic-filter {
-  position: fixed;
-  top: var(--gap);
-  left: var(--gap);
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  max-width: calc(100vw - var(--panel-width) - 3 * var(--gap));
-  z-index: 1000;
-}
-
-#topic-filter button {
-  min-height: var(--control-height);
-  padding: 0 16px;
-  border: 2px solid var(--accent-color);
-  border-radius: 999px;
-  background: var(--surface-color);
-  color: var(--accent-color);
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-}
-
-#topic-filter button[aria-pressed="true"] {
-  background: var(--accent-color);
-  color: var(--surface-color);
 }
 
 #side-column {
@@ -358,7 +326,6 @@ body {
 }
 
 #map-legend a:focus-visible,
-#topic-filter button:focus-visible,
 #date-calendar button:focus-visible,
 #info-panel-close:focus-visible {
   outline: 3px solid var(--accent-color);
@@ -440,26 +407,19 @@ body {
 }
 
 @media (max-width: 640px) and (orientation: portrait) {
-  #topic-filter {
-    right: var(--gap);
-    max-width: none;
-  }
-
   #side-column {
     display: contents;
   }
 
   #date-calendar {
     position: fixed;
-    top: calc(2 * var(--gap) + var(--control-height));
+    top: var(--gap);
     right: var(--gap);
     z-index: 1100;
   }
 
   #date-calendar.is-expanded {
-    top: calc(2 * var(--gap) + var(--control-height));
     width: min(var(--phone-calendar-width), calc(100vw - 2 * var(--gap)));
-    max-height: calc(100% - 3 * var(--gap) - var(--control-height));
   }
 
   #date-calendar:not(.is-expanded) {

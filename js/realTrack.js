@@ -98,18 +98,18 @@ export const createRealTrack = (map, tracks) => {
     layer.clearLayers();
   };
 
-  const collectSegments = (enabledTopics, month) =>
+  const collectSegments = (loadedTopics, month) =>
     tracks
-      .filter(({ topicId }) => enabledTopics.some((topicData) => topicData.topic.id === topicId))
+      .filter(({ topicId }) => loadedTopics.some((topicData) => topicData.topic.id === topicId))
       .map(({ topicId, data }) => ({
         points: getMonthSegment(data, month),
-        color: getTrackColor(data, enabledTopics, topicId),
+        color: getTrackColor(data, loadedTopics, topicId),
       }))
       .filter(({ points }) => points.length > 0);
 
-  const draw = (enabledTopics, month) => {
+  const draw = (loadedTopics, month) => {
     clear();
-    segments = collectSegments(enabledTopics, month);
+    segments = collectSegments(loadedTopics, month);
     segments.forEach(({ points, color }) => createPath(points, color).addTo(layer));
   };
 

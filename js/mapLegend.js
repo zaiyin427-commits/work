@@ -75,8 +75,5 @@ export const initMapLegend = (tracks, topicDataList) => {
     );
     fillSource(sourceElement, data);
   }
-  const update = (enabledTopicIds) => {
-    legend.hidden = !enabledTopicIds.has(MAP_LEGEND.topicId);
-  };
-  return { update };
+  legend.hidden = !topicDataList.some((topicData) => topicData.topic.id === MAP_LEGEND.topicId);
 };
