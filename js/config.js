@@ -159,15 +159,16 @@ export const REAL_TRACK = {
   stayAreaClassName: "real-track-stay-area",
   stayAreaMaxSpreadKilometers: 30,
   stayAreaMinimumRecords: 3,
-  stayAreaMinRadiusKilometers: 10,
-  roundingMarginDiagonalDivisor: 2,
+  stayAreaMinSemiAxisKilometers: 5,
+  roundingMarginCellFraction: 0.5,
+  ellipseCircumscribeFactor: Math.SQRT2,
+  stayAreaEllipseVertexCount: 64,
   stayAreaStrokeWeight: 2,
   stayAreaStrokeOpacity: 0.8,
   stayAreaFillOpacity: 0.25,
 };
 
 export const EARTH_RADIUS_KILOMETERS = 6371;
-export const METERS_PER_KILOMETER = 1000;
 
 export const MAP_LEGEND = {
   topicId: MIGRATORY_BIRDS_TOPIC_ID,

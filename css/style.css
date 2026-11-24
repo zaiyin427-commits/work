@@ -20,7 +20,8 @@
   --calendar-toggle-height: 40px;
   --legend-max-width: 360px;
   --legend-swatch-width: 28px;
-  --legend-stay-swatch-size: 16px;
+  --legend-stay-swatch-width: 22px;
+  --legend-stay-swatch-height: 12px;
 }
 
 * {
@@ -295,9 +296,9 @@ body {
 }
 
 .legend-swatch--stay {
-  width: var(--legend-stay-swatch-size);
-  height: var(--legend-stay-swatch-size);
-  margin-inline: calc((var(--legend-swatch-width) - var(--legend-stay-swatch-size)) / 2);
+  width: var(--legend-stay-swatch-width);
+  height: var(--legend-stay-swatch-height);
+  margin-inline: calc((var(--legend-swatch-width) - var(--legend-stay-swatch-width)) / 2);
   box-sizing: border-box;
   border: 2px solid var(--legend-swatch-color, var(--text-color));
   border-radius: 50%;

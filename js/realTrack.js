@@ -3,7 +3,6 @@ import {
   REAL_TRACK,
   MESSAGES,
   EARTH_RADIUS_KILOMETERS,
-  METERS_PER_KILOMETER,
   ISO_DATE_PATTERN,
   FALLBACK_MARKER_COLOR,
 } from "./config.js";
@@ -62,9 +61,6 @@ const getCentroid = (points) => [
   points.reduce((sum, point) => sum + point[1], 0) / points.length,
 ];
 
-const getSpreadKilometers = (points, center) =>
-  Math.max(...points.map((point) => getGreatCircleKilometers(center, point)));
-
 const getMaxPairDistanceKilometers = (points) =>
   Math.max(
     ...points.flatMap((from, fromIndex) =>
@@ -96,19 +92,38 @@ const splitIntoRuns = (points) => {
   return runs;
 };
 
-const getRoundingMarginKilometers = (precisionDegrees, latitude) => {
-  const cellHeightKilometers = toRadians(precisionDegrees) * EARTH_RADIUS_KILOMETERS;
-  const cellWidthKilometers = cellHeightKilometers * Math.cos(toRadians(latitude));
-  return Math.hypot(cellHeightKilometers, cellWidthKilometers) / REAL_TRACK.roundingMarginDiagonalDivisor;
+const getKilometersPerDegree = (latitude) => {
+  const latitudeKilometers = toRadians(1) * EARTH_RADIUS_KILOMETERS;
+  return {
+    latitude: latitudeKilometers,
+    longitude: latitudeKilometers * Math.cos(toRadians(latitude)),
+  };
+};
+
+const getSemiAxisKilometers = (offsetsKilometers, cellKilometers) => {
+  const halfExtentKilometers = Math.max(...offsetsKilometers.map(Math.abs));
+  const coveringKilometers =
+    (halfExtentKilometers + cellKilometers * REAL_TRACK.roundingMarginCellFraction) *
+    REAL_TRACK.ellipseCircumscribeFactor;
+  return Math.max(coveringKilometers, REAL_TRACK.stayAreaMinSemiAxisKilometers);
 };
 
 const getStayArea = (points, precisionDegrees) => {
   const center = getCentroid(points);
-  const radiusKilometers = Math.max(
-    getSpreadKilometers(points, center) + getRoundingMarginKilometers(precisionDegrees, center[0]),
-    REAL_TRACK.stayAreaMinRadiusKilometers,
-  );
-  return { center, radiusKilometers };
+  const kilometersPerDegree = getKilometersPerDegree(center[0]);
+  const eastWestOffsets = points.map((point) => (point[1] - center[1]) * kilometersPerDegree.longitude);
+  const northSouthOffsets = points.map((point) => (point[0] - center[0]) * kilometersPerDegree.latitude);
+  return {
+    center,
+    eastWestSemiAxisKilometers: getSemiAxisKilometers(
+      eastWestOffsets,
+      precisionDegrees * kilometersPerDegree.longitude,
+    ),
+    northSouthSemiAxisKilometers: getSemiAxisKilometers(
+      northSouthOffsets,
+      precisionDegrees * kilometersPerDegree.latitude,
+    ),
+  };
 };
 
 const describeRun = ({ isStay, points }, precisionDegrees) => {
@@ -161,9 +176,19 @@ const createPath = (points, color) =>
     interactive: false,
   });
 
-const createStayArea = ({ center, radiusKilometers }, color) =>
-  L.circle(center, {
-    radius: radiusKilometers * METERS_PER_KILOMETER,
+const getEllipseOutline = ({ center, eastWestSemiAxisKilometers, northSouthSemiAxisKilometers }) => {
+  const kilometersPerDegree = getKilometersPerDegree(center[0]);
+  return Array.from({ length: REAL_TRACK.stayAreaEllipseVertexCount }, (_, index) => {
+    const angle = (2 * Math.PI * index) / REAL_TRACK.stayAreaEllipseVertexCount;
+    return [
+      center[0] + (northSouthSemiAxisKilometers * Math.sin(angle)) / kilometersPerDegree.latitude,
+      center[1] + (eastWestSemiAxisKilometers * Math.cos(angle)) / kilometersPerDegree.longitude,
+    ];
+  });
+};
+
+const createStayArea = (stayArea, color) =>
+  L.polygon(getEllipseOutline(stayArea), {
     color,
     weight: REAL_TRACK.stayAreaStrokeWeight,
     opacity: REAL_TRACK.stayAreaStrokeOpacity,
