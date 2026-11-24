@@ -127,7 +127,7 @@ const start = async () => {
       loaded,
       getSelectedMonth(),
       (site, month, topicData) => {
-        dateCalendar.collapse();
+        dateCalendar.collapseIfCompact();
         showSiteInfo(site, month, topicData, observations, selectedDate);
       },
     );
@@ -155,7 +155,7 @@ const start = async () => {
     onUserInput: playControl.stop,
     onExpand: closeInfoPanel,
   });
-  map.on("click", dateCalendar.collapse);
+  map.on("click", dateCalendar.collapseIfCompact);
   render();
 };
 

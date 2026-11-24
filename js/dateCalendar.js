@@ -74,7 +74,7 @@ export const initDateCalendar = (
   let selectedDate = startOfDay(initialDate);
   let shownMonthKey = null;
 
-  const isCollapsible = () => getComputedStyle(toggle).display !== "none";
+  const compactLayout = window.matchMedia(CALENDAR.compactMediaQuery);
 
   const showToggleLabel = () => {
     const isExpanded = card.classList.contains("is-expanded");
@@ -139,10 +139,23 @@ export const initDateCalendar = (
     }
   };
 
+  const collapseIfCompact = () => {
+    if (compactLayout.matches) {
+      collapse();
+    }
+  };
+
   const expand = () => {
     card.classList.add("is-expanded");
     showToggleLabel();
-    onExpand();
+    if (compactLayout.matches) {
+      onExpand();
+    }
+  };
+
+  const applyLayoutDefault = () => {
+    card.classList.toggle("is-expanded", !compactLayout.matches);
+    showToggleLabel();
   };
 
   function selectByUser(date) {
@@ -152,9 +165,7 @@ export const initDateCalendar = (
 
   function selectDayByUser(date) {
     selectByUser(date);
-    if (isCollapsible()) {
-      collapse();
-    }
+    collapseIfCompact();
   }
 
   byId("calendar-prev").addEventListener("click", () =>
@@ -167,6 +178,7 @@ export const initDateCalendar = (
   toggle.addEventListener("click", () =>
     card.classList.contains("is-expanded") ? collapse() : expand(),
   );
+  compactLayout.addEventListener("change", applyLayoutDefault);
   document.addEventListener("keydown", (event) => {
     if (event.key === CALENDAR.collapseKey) {
       collapse();
@@ -176,8 +188,9 @@ export const initDateCalendar = (
   byId("calendar-weekdays").replaceChildren(
     ...CALENDAR.weekdayLabels.map(createWeekdayCell),
   );
+  applyLayoutDefault();
   show();
   card.hidden = false;
 
-  return { setDate: select, getDate: () => selectedDate, collapse };
+  return { setDate: select, getDate: () => selectedDate, collapseIfCompact };
 };

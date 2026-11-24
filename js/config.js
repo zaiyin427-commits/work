@@ -36,6 +36,7 @@ export const CALENDAR = {
   isoPartWidth: 2,
   monthsPerStep: 1,
   collapseKey: "Escape",
+  compactMediaQuery: "(max-width: 640px), (max-height: 700px)",
 };
 
 export const MARKER_STYLE = {
